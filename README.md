@@ -31,7 +31,7 @@ A beautiful, themeable webchat interface for [Clawdbot](https://github.com/clawd
 ### Option 1: Direct Serve (Simplest)
 ```bash
 # Clone the repo
-git clone https://github.com/user/clawdbot-webchat.git
+git clone [https://github.com/flayzeraynx/buddyBot-OpenClawUI](https://github.com/flayzeraynx/buddyBot-OpenClawUI)
 cd clawdbot-webchat
 
 # Serve with any static file server
