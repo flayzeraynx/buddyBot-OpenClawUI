@@ -20,7 +20,7 @@ A beautiful, themeable webchat interface for [Clawdbot](https://github.com/clawd
 
 ## 📸 Screenshots
 
-(placeholder for screenshots)
+![BuddyBot Webchat UI](BuddyBot.png)
 
 ## 🚀 Quick Start
 
