@@ -31,7 +31,7 @@ A beautiful, themeable webchat interface for [Clawdbot](https://github.com/clawd
 ### Option 1: Direct Serve (Simplest)
 ```bash
 # Clone the repo
-git clone [https://github.com/flayzeraynx/buddyBot-OpenClawUI](https://github.com/flayzeraynx/buddyBot-OpenClawUI)
+git clone https://github.com/flayzeraynx/buddyBot-OpenClawUI
 cd clawdbot-webchat
 
 # Serve with any static file server
@@ -192,14 +192,14 @@ server {
 
 ### AWS EC2 / Any VPS
 ```bash
-git clone [https://github.com/flayzeraynx/buddyBot-OpenClawUI](https://github.com/flayzeraynx/buddyBot-OpenClawUI) /opt/webchat
+git clone https://github.com/flayzeraynx/buddyBot-OpenClawUI /opt/webchat
 cd /opt/webchat
 python3 -m http.server 3456 --bind 0.0.0.0 &
 ```
 
 ### macOS (Local)
 ```bash
-git clone [https://github.com/flayzeraynx/buddyBot-OpenClawUI](https://github.com/flayzeraynx/buddyBot-OpenClawUI) ~/webchat
+git clone https://github.com/flayzeraynx/buddyBot-OpenClawUI ~/webchat
 cd ~/webchat
 python3 -m http.server 3456
 # Open http://localhost:3456?token=YOUR_TOKEN
