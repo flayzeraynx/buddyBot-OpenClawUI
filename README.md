@@ -192,14 +192,14 @@ server {
 
 ### AWS EC2 / Any VPS
 ```bash
-git clone https://github.com/user/clawdbot-webchat.git /opt/webchat
+git clone [https://github.com/flayzeraynx/buddyBot-OpenClawUI](https://github.com/flayzeraynx/buddyBot-OpenClawUI) /opt/webchat
 cd /opt/webchat
 python3 -m http.server 3456 --bind 0.0.0.0 &
 ```
 
 ### macOS (Local)
 ```bash
-git clone https://github.com/user/clawdbot-webchat.git ~/webchat
+git clone [https://github.com/flayzeraynx/buddyBot-OpenClawUI](https://github.com/flayzeraynx/buddyBot-OpenClawUI) ~/webchat
 cd ~/webchat
 python3 -m http.server 3456
 # Open http://localhost:3456?token=YOUR_TOKEN
