@@ -1,37 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Clawdbot</title>
-    
-    <script>
-// ═══════════════════════════════════════════════════════════
-// CONFIGURATION — Customize your webchat here
-// ═══════════════════════════════════════════════════════════
-window.CLAWDBOT_WEBCHAT_CONFIG = {
-    // Bot identity
-    name: 'Clawdbot',           // Display name in header
-    emoji: '🤖',                // Emoji/icon next to name
-    
-    // Session
-    sessionKey: 'main',          // Gateway session key
-    
-    // File uploads
-    maxFileSize: 5 * 1024 * 1024, // 5MB default (gateway limit)
-    allowedFileTypes: 'image/*,video/*,audio/*,.gif,.pdf,.doc,.docx,.txt,.csv,.json,.xml,.zip',
-    
-    // Appearance
-    defaultTheme: 'default',     // default, matrix, god, futuristic, ascii, ocean
-    
-    // Language (en or tr)
-    locale: 'en',
-    
-    // Custom strings (override any locale string)
-    strings: {}
-};
-    </script>
-    
+    <title>Buddy</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -117,9 +89,10 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             color: var(--text-primary);
             height: 100vh; height: 100dvh;
             overflow: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
         }
 
-        .container { display: flex; height: 100vh; height: 100dvh; max-width: 1600px; margin: 0 auto; }
+        .container { display: flex; height: 100vh; height: 100dvh; width: 100%; }
 
         /* ── Avatar Section ─────────────────────── */
         .avatar-section {
@@ -128,6 +101,7 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             padding: 2rem;
             background: linear-gradient(135deg, var(--bg-avatar) 0%, var(--bg-secondary) 100%);
             position: relative; overflow: hidden;
+            transition: background 0.5s ease;
         }
         .avatar-section::before {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
@@ -140,6 +114,7 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         .bg-particle {
             position:absolute; width:3px; height:3px; background:var(--accent-1); border-radius:50%; opacity:0;
             animation: floatP var(--dur,8s) var(--delay,0s) infinite ease-in-out;
+            transition: background 0.3s ease;
         }
         @keyframes floatP { 0%{opacity:0;transform:translateY(100vh) scale(0)} 10%{opacity:.6} 90%{opacity:.6} 100%{opacity:0;transform:translateY(-20vh) scale(1.5)} }
 
@@ -152,24 +127,49 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         @keyframes matrixFall { 0%{transform:translateY(-100%)} 100%{transform:translateY(200vh)} }
 
         .avatar-glow {
-            position:absolute;top:50%;left:50%;width:280px;height:280px;transform:translate(-50%,-50%);
+            position:absolute;top:40%;left:50%;width:280px;height:260px;transform:translate(-50%,-50%);
             border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent-1) 15%,transparent) 0%,transparent 70%);
             animation:glowPulse 4s ease-in-out infinite;pointer-events:none;
+            transition: background 0.5s ease;
         }
         @keyframes glowPulse { 0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(1)} 50%{opacity:.8;transform:translate(-50%,-50%) scale(1.15)} }
 
         .avatar-container {
-            width:260px;height:260px;position:relative;z-index:1;
-            animation:float 6s ease-in-out infinite;
+            width:260px;height:280px;position:relative;z-index:1;
+            animation:float 6s ease-in-out infinite, breathe 4s ease-in-out infinite;
         }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        @keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
 
-        #avatarSvg { width:100%;height:100%; }
+        #avatarSvg { 
+            width:100%;height:100%;
+            filter: drop-shadow(0 0 20px var(--glow-color));
+            transition: filter 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Hover excitement animation */
+        .avatar-container.excited {
+            animation: excitement 0.6s ease-in-out !important;
+        }
+        @keyframes excitement {
+            0% { transform: translateY(0) scale(1); }
+            15% { transform: translateY(-18px) scale(1.08); }
+            30% { transform: translateY(-8px) scale(1.04); }
+            45% { transform: translateY(-14px) scale(1.06); }
+            60% { transform: translateY(-5px) scale(1.02); }
+            75% { transform: translateY(-10px) scale(1.04); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        .avatar-container.excited #avatarSvg {
+            filter: drop-shadow(0 0 35px var(--glow-color)) drop-shadow(0 0 60px var(--glow-color));
+        }
 
         .status-text {
             margin-top:1.5rem;font-size:1.1rem;font-weight:500;z-index:1;
             background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+            transition: opacity 0.3s ease;
         }
 
         /* ── Theme Selector ─────────────────────── */
@@ -178,7 +178,8 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.15);
             cursor:pointer;transition:all .3s ease;position:relative;
         }
-        .theme-btn:hover { transform:scale(1.2);border-color:rgba(255,255,255,.5); }
+        .theme-btn:hover { transform:scale(1.2);border-color:rgba(255,255,255,.5);box-shadow: 0 0 15px rgba(255,255,255,.3); }
+        .theme-btn:active { transform:scale(1.05); }
         .theme-btn.active { border-color:white;box-shadow:0 0 10px rgba(255,255,255,.3); }
         .theme-btn[data-theme="default"] { background:linear-gradient(135deg,#8b5cf6,#06b6d4); }
         .theme-btn[data-theme="matrix"] { background:linear-gradient(135deg,#00ff41,#003300); }
@@ -197,11 +198,15 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         .chat-section {
             flex:1;display:flex;flex-direction:column;
             background:var(--bg-secondary);border-left:1px solid var(--border-color);min-width:0;
+            transition: background 0.5s ease, border-color 0.5s ease;
+            position: relative;
+            overflow: hidden;
         }
         .chat-header {
             padding:1rem 1.5rem;border-bottom:1px solid var(--border-color);flex-shrink:0;
             background:linear-gradient(90deg,color-mix(in srgb,var(--accent-1) 10%,transparent),color-mix(in srgb,var(--accent-2) 10%,transparent));
             display:flex;align-items:center;justify-content:space-between;
+            transition: background 0.5s ease, border-color 0.5s ease;
         }
         .chat-header h1 {
             font-size:1.2rem;font-weight:600;
@@ -209,20 +214,246 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
         }
         .chat-header-left { display:flex;align-items:center;gap:.75rem; }
-        .new-session-btn {
-            width:32px;height:32px;background:transparent;border:1.5px solid var(--border-color);
-            border-radius:.5rem;cursor:pointer;color:var(--text-secondary);
-            display:flex;align-items:center;justify-content:center;transition:all .3s ease;
+        
+        /* ── History Sidebar ────────────────────── */
+        .history-sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: var(--bg-avatar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease, border-color 0.5s ease;
         }
-        .new-session-btn:hover { border-color:var(--accent-1);color:var(--accent-1);background:color-mix(in srgb,var(--accent-1) 8%,transparent); }
-        .new-session-btn svg { width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
-        .new-session-btn .tooltip {
-            position:absolute;top:120%;left:50%;transform:translateX(-50%);
-            background:rgba(0,0,0,.85);color:white;padding:4px 8px;border-radius:4px;
-            font-size:.7rem;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;
+        
+        .history-sidebar.open {
+            transform: translateX(0);
         }
-        .new-session-btn:hover .tooltip { opacity:1; }
-        .new-session-btn { position:relative; }
+        
+        .sidebar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 99;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .sidebar-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .sidebar-close {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: 1.5px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+        
+        .sidebar-close:hover {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+            background: color-mix(in srgb, var(--accent-1) 8%, transparent);
+            transform: scale(1.1);
+        }
+        
+        .sidebar-sessions {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0.75rem;
+        }
+        
+        .sidebar-sessions::-webkit-scrollbar { width: 4px; }
+        .sidebar-sessions::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-sessions::-webkit-scrollbar-thumb {
+            background: color-mix(in srgb, var(--accent-1) 30%, transparent);
+            border-radius: 2px;
+        }
+        
+        .session-item {
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            background: color-mix(in srgb, var(--accent-1) 5%, transparent);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .session-item:hover {
+            background: color-mix(in srgb, var(--accent-1) 10%, transparent);
+            border-color: var(--accent-1);
+            transform: translateX(4px);
+        }
+        
+        .session-item.active {
+            background: color-mix(in srgb, var(--accent-1) 15%, transparent);
+            border-color: var(--accent-1);
+            box-shadow: 0 0 12px var(--glow-color);
+        }
+        
+        .session-delete {
+            position: absolute;
+            top: 50%;
+            right: 0.6rem;
+            transform: translateY(-50%);
+            width: 26px;
+            height: 26px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+        
+        .session-item:hover .session-delete {
+            opacity: 0.7;
+        }
+        
+        .session-delete:hover {
+            opacity: 1 !important;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+            transform: translateY(-50%) scale(1.15);
+        }
+        
+        .session-delete:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        
+        .session-info {
+            padding-right: 1.5rem;
+        }
+        
+        .session-date {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-family: var(--font-mono);
+        }
+        
+        .session-preview {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.3;
+        }
+        
+        .session-new {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            font-weight: 500;
+        }
+        
+        .session-new:hover {
+            transform: translateX(0) scale(1.02);
+            box-shadow: 0 4px 16px var(--glow-color);
+        }
+        
+        .hamburger-btn {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: 1.5px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .hamburger-btn:hover {
+            border-color: var(--accent-1);
+            color: var(--accent-1);
+            background: color-mix(in srgb, var(--accent-1) 8%, transparent);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+        
+        .hamburger-btn:active { transform: scale(0.95); }
+        
+        .hamburger-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .hamburger-btn .tooltip {
+            position: absolute;
+            top: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        
+        .hamburger-btn:hover .tooltip { opacity: 1; }
 
         /* ── Custom Confirm Dialog ──────────────── */
         .confirm-overlay {
@@ -247,11 +478,14 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         .confirm-btn.primary {
             background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:white;
         }
-        .confirm-btn.primary:hover { transform:translateY(-1px);box-shadow:0 4px 12px var(--glow-color); }
+        .confirm-btn.primary:hover { transform:translateY(-1px) scale(1.05);box-shadow:0 4px 12px var(--glow-color); }
+        .confirm-btn.primary:active { transform:translateY(0) scale(0.98); }
         .confirm-btn.secondary {
             background:transparent;color:var(--text-secondary);border:1.5px solid var(--border-color);
         }
-        .confirm-btn.secondary:hover { border-color:var(--text-secondary);color:var(--text-primary); }
+        .confirm-btn.secondary:hover { border-color:var(--text-secondary);color:var(--text-primary);transform:scale(1.05); }
+        .confirm-btn.secondary:active { transform:scale(0.98); }
+
         .chat-messages {
             flex:1;overflow-y:auto;overflow-x:hidden;padding:1.5rem;
             display:flex;flex-direction:column;gap:.75rem;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;
@@ -260,32 +494,277 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         .chat-messages::-webkit-scrollbar-track { background:transparent; }
         .chat-messages::-webkit-scrollbar-thumb { background:color-mix(in srgb,var(--accent-1) 30%,transparent);border-radius:3px; }
 
-        .message { display:flex;gap:.5rem;align-items:flex-end;animation:slideIn .3s ease-out; }
-        @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        /* ── IMPROVEMENT #1: AVATAR SYSTEM ────────── */
+        .message { 
+            display:flex;gap:.65rem;align-items:flex-end;
+            animation:messageSlideIn .4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes messageSlideIn { 
+            from{opacity:0;transform:translateY(15px) scale(0.95)} 
+            to{opacity:1;transform:translateY(0) scale(1)} 
+        }
         .message.user { flex-direction:row-reverse; }
+        
+        .message-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-bottom: 2px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border: 1.5px solid var(--border-color);
+        }
+        
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.3));
+            border: 1.5px solid var(--border-color);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
         .message-content { max-width:75%;display:flex;flex-direction:column; }
         .message.user .message-content { align-items:flex-end; }
-        .message-bubble { padding:.75rem 1rem;border-radius:1rem;word-wrap:break-word;overflow-wrap:break-word;line-height:1.5;font-size:.95rem; }
+        .message-bubble { 
+            padding:.75rem 1rem;border-radius:1rem;word-wrap:break-word;overflow-wrap:break-word;
+            line-height:1.5;font-size:.95rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .message-bubble:hover { transform: translateY(-1px); }
         .message-bubble p:last-child { margin-bottom:0 !important; }
-        .message.user .message-bubble { background:var(--user-bubble);color:white;border-bottom-right-radius:.25rem; }
-        .message.assistant .message-bubble { background:var(--assistant-bubble-bg);border:1px solid var(--assistant-bubble-border);color:var(--text-primary);border-bottom-left-radius:.25rem; }
+        .message.user .message-bubble { 
+            background:var(--user-bubble);color:white;border-bottom-right-radius:.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .message.assistant .message-bubble { 
+            background:var(--assistant-bubble-bg);border:1px solid var(--assistant-bubble-border);
+            color:var(--text-primary);border-bottom-left-radius:.25rem;
+        }
         .message-time { font-size:.7rem;color:var(--text-secondary);margin-top:.25rem;padding:0 .25rem; }
 
-        .chat-input-container { padding:1rem 1.5rem;border-top:1px solid var(--border-color);background:var(--bg-avatar);flex-shrink:0; }
-        .input-wrapper { display:flex;gap:.75rem;align-items:flex-end; }
-        .attach-button {
-            width:44px;height:44px;background:transparent;
-            color:var(--text-secondary);border:2px solid var(--border-color);border-radius:50%;
-            font-size:1.2rem;cursor:pointer;transition:all .3s ease;
-            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        /* ── IMPROVEMENT #2: INPUT FIELD REDESIGN (WhatsApp-style pill) ────────── */
+        .chat-input-container { 
+            padding:1rem 1.5rem;border-top:1px solid var(--border-color);
+            background:var(--bg-avatar);flex-shrink:0;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .attach-button:hover { border-color:var(--accent-1);color:var(--accent-1); }
-        .attach-button svg { width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round; }
+        
+        .input-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: color-mix(in srgb, var(--accent-1) 5%, transparent);
+            border: 2px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 0.4rem 0.5rem 0.4rem 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-pill:focus-within {
+            border-color: var(--accent-1);
+            background: color-mix(in srgb, var(--accent-1) 8%, transparent);
+            box-shadow: 0 0 0 3px var(--glow-color), 0 4px 20px var(--glow-color);
+            animation: pillGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pillGlow {
+            0%, 100% { box-shadow: 0 0 0 3px var(--glow-color), 0 4px 20px var(--glow-color); }
+            50% { box-shadow: 0 0 0 4px var(--glow-color), 0 6px 25px var(--glow-color); }
+        }
+        
+        .pill-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .pill-button:hover {
+            color: var(--accent-1);
+            background: color-mix(in srgb, var(--accent-1) 10%, transparent);
+            transform: scale(1.15);
+        }
+        
+        .pill-button:active {
+            transform: scale(0.95);
+        }
+        
+        .pill-button svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .chat-input {
+            flex: 1;
+            min-height: 36px;
+            max-height: 120px;
+            padding: 0.5rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: .95rem;
+            resize: none;
+            line-height: 1.4;
+            outline: none;
+        }
+        
+        .chat-input::placeholder { color: var(--text-secondary); }
+        
+        .send-button {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .send-button:hover {
+            transform: scale(1.12) rotate(5deg);
+            box-shadow: 0 4px 20px var(--glow-color);
+        }
+        
+        .send-button:active {
+            transform: scale(0.9);
+            animation: sendPulse 0.4s ease-out;
+        }
+        
+        @keyframes sendPulse {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 var(--glow-color); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px transparent; }
+            100% { transform: scale(1); box-shadow: 0 4px 20px var(--glow-color); }
+        }
+        
+        .send-button:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .send-button svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+            transition: transform 0.3s ease;
+        }
+        
+        .send-button:hover svg {
+            transform: translateX(2px);
+        }
+
+        /* ── IMPROVEMENT #3: VOICE RECORDING UI ────────── */
+        .recording-ui {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.4rem 0.75rem;
+        }
+        
+        .recording-ui.active {
+            display: flex;
+        }
+        
+        .input-pill.recording {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        
+        .recording-dot {
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: recordingPulse 1.5s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        
+        @keyframes recordingPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+        
+        .recording-timer {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            min-width: 45px;
+        }
+        
+        .recording-waveform {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            flex: 1;
+            height: 24px;
+        }
+        
+        .recording-bar {
+            width: 3px;
+            background: var(--accent-1);
+            border-radius: 2px;
+            animation: waveformDance var(--duration, 0.4s) ease-in-out infinite;
+            opacity: 0.7;
+        }
+        
+        @keyframes waveformDance {
+            0%, 100% { height: 8px; }
+            50% { height: var(--height, 20px); }
+        }
+        
+        .recording-cancel {
+            color: var(--text-secondary);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .recording-cancel:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
         .file-preview {
             display:none;padding:.5rem 1rem;border-top:1px solid var(--border-color);
             background:color-mix(in srgb,var(--accent-1) 5%,transparent);
             align-items:center;gap:.75rem;
+            animation: slideDown 0.3s ease-out;
         }
+        @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
         .file-preview.active { display:flex; }
         .file-preview-thumb {
             width:48px;height:48px;border-radius:.5rem;object-fit:cover;
@@ -302,47 +781,41 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         .file-preview-remove {
             width:28px;height:28px;background:transparent;border:none;color:var(--text-secondary);
             cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;
+            transition: all 0.2s ease;
         }
-        .file-preview-remove:hover { color:#ef4444;background:rgba(239,68,68,.1); }
-        .chat-input {
-            flex:1;min-height:44px;max-height:120px;padding:.75rem 1rem;
-            background:color-mix(in srgb,var(--accent-1) 5%,transparent);
-            border:2px solid var(--border-color);border-radius:1.25rem;
-            color:var(--text-primary);font-family:var(--font-main);font-size:.95rem;
-            resize:none;transition:all .3s ease;line-height:1.4;
+        .file-preview-remove:hover { 
+            color:#ef4444;background:rgba(239,68,68,.1);
+            transform: scale(1.15);
         }
-        .chat-input:focus { outline:none;border-color:var(--accent-1);background:color-mix(in srgb,var(--accent-1) 8%,transparent); }
-        .chat-input::placeholder { color:var(--text-secondary); }
-        .send-button {
-            width:44px;height:44px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
-            color:white;border:none;border-radius:50%;font-size:1.2rem;cursor:pointer;
-            transition:all .3s ease;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-        }
-        .send-button:hover { transform:scale(1.1);box-shadow:0 4px 15px var(--glow-color); }
-        .send-button:active { transform:scale(.95); }
-        .send-button:disabled { opacity:.4;cursor:not-allowed;transform:none; }
-        .send-button svg { width:20px;height:20px;fill:white; }
 
-        /* ── Typing Indicator ───────────────────── */
-        .typing-indicator { display:flex;gap:.5rem;align-items:flex-end;animation:slideIn .3s ease-out; }
+        /* ── IMPROVEMENT #4: ENHANCED TYPING INDICATOR ────────── */
+        .typing-indicator { display:flex;gap:.65rem;align-items:flex-end;animation:messageSlideIn .3s ease-out; }
         .typing-indicator .message-content { max-width:75%; }
         .typing-bubble {
             padding:.75rem 1.25rem;border-radius:1rem;border-bottom-left-radius:.25rem;
             background:var(--assistant-bubble-bg);border:1px solid var(--assistant-bubble-border);
-            display:flex;gap:5px;align-items:center;
+            display:flex;gap:6px;align-items:center;
         }
         .typing-dot {
-            width:8px;height:8px;border-radius:50%;background:var(--accent-2);opacity:.4;
+            width:8px;height:8px;border-radius:50%;
+            background:var(--accent-2);
             animation:typingBounce 1.4s ease-in-out infinite;
+            transition: background 0.3s ease;
         }
-        .typing-dot:nth-child(2) { animation-delay:.2s; }
-        .typing-dot:nth-child(3) { animation-delay:.4s; }
-        @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-8px);opacity:1} }
+        .typing-dot:nth-child(1) { animation-delay:0s; }
+        .typing-dot:nth-child(2) { animation-delay:.2s; width: 9px; height: 9px; }
+        .typing-dot:nth-child(3) { animation-delay:.4s; width: 7px; height: 7px; }
+        @keyframes typingBounce { 
+            0%,60%,100%{transform:translateY(0) scale(1);opacity:.4;background:var(--accent-2)} 
+            30%{transform:translateY(-10px) scale(1.2);opacity:1;background:var(--accent-1)} 
+        }
 
         /* ── Date Separator ─────────────────────── */
         .date-separator {
             display:flex;align-items:center;gap:1rem;margin:.5rem 0;
+            animation: fadeIn 0.5s ease-out;
         }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .date-separator::before, .date-separator::after {
             content:'';flex:1;height:1px;background:var(--border-color);
         }
@@ -367,14 +840,19 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             color:var(--text-primary);font-family:var(--font-mono);font-size:.9rem;
             transition:all .3s ease;text-align:center;
         }
-        .login-input:focus { outline:none;border-color:var(--accent-1);background:color-mix(in srgb,var(--accent-1) 8%,transparent); }
+        .login-input:focus { 
+            outline:none;border-color:var(--accent-1);
+            background:color-mix(in srgb,var(--accent-1) 8%,transparent);
+            box-shadow: 0 0 20px var(--glow-color);
+        }
         .login-input::placeholder { color:var(--text-secondary);font-family:var(--font-main); }
         .login-button {
             padding:.75rem 2.5rem;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
             color:white;border:none;border-radius:.75rem;font-family:var(--font-main);font-size:1rem;font-weight:600;
             cursor:pointer;transition:all .3s ease;
         }
-        .login-button:hover { transform:translateY(-2px);box-shadow:0 6px 20px var(--glow-color); }
+        .login-button:hover { transform:translateY(-2px) scale(1.05);box-shadow:0 6px 20px var(--glow-color); }
+        .login-button:active { transform:translateY(0) scale(0.98); }
         .login-error { color:#ef4444;font-size:.85rem;min-height:1.2rem; }
 
         /* ── ASCII Face ─────────────────────────── */
@@ -390,9 +868,9 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         /* ── Mobile ─────────────────────────────── */
         @media (max-width:768px) {
             .container { flex-direction:column; }
-            .avatar-section { flex:0 0 auto;padding:1rem;min-height:180px; }
-            .avatar-container { width:120px;height:120px; }
-            .avatar-glow { width:140px;height:140px; }
+            .avatar-section { flex:0 0 auto;padding:1rem;min-height:160px; }
+            .avatar-container { width:120px;height:130px; }
+            .avatar-glow { width:140px;height:120px; }
             .status-text { font-size:.85rem;margin-top:.5rem; }
             .theme-selector { margin-top:0; }
             .theme-btn { width:24px;height:24px; }
@@ -403,23 +881,30 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             .message-content { max-width:85%; }
             .message-bubble { font-size:.9rem;padding:.65rem .85rem; }
             .chat-input-container { padding:.75rem 1rem; }
-            .chat-input { font-size:.9rem;min-height:40px; }
-            .send-button { width:40px;height:40px; }
-            .attach-button { width:40px;height:40px; }
+            .chat-input { font-size:.9rem;min-height:32px; }
+            .send-button { width:36px;height:36px; }
+            .pill-button { width:32px;height:32px; }
+            .message-avatar { width:20px;height:20px;font-size:11px; }
+            
+            /* Sidebar mobile adjustments */
+            .history-sidebar {
+                width: 85%;
+                max-width: 320px;
+            }
         }
         @media (max-width:400px) {
-            .avatar-section { min-height:140px;padding:.75rem; }
-            .avatar-container { width:90px;height:90px; }
-            .avatar-glow { width:110px;height:110px; }
+            .avatar-section { min-height:120px;padding:.75rem; }
+            .avatar-container { width:90px;height:100px; }
+            .avatar-glow { width:110px;height:95px; }
         }
     </style>
 </head>
 <body>
     <div class="login-overlay" id="loginOverlay">
-        <div class="login-title" id="loginTitle"></div>
-        <div class="login-subtitle" id="loginSubtitle"></div>
-        <input type="password" class="login-input" id="tokenInput" placeholder="" autocomplete="off" spellcheck="false">
-        <button class="login-button" id="loginButton"></button>
+        <div class="login-title">🐕 Buddy</div>
+        <div class="login-subtitle">Devam etmek için token girin</div>
+        <input type="password" class="login-input" id="tokenInput" placeholder="Token" autocomplete="off" spellcheck="false">
+        <button class="login-button" id="loginButton">Bağlan</button>
         <div class="login-error" id="loginError"></div>
     </div>
 
@@ -427,8 +912,8 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
         <div class="confirm-box">
             <p id="confirmText"></p>
             <div class="confirm-actions">
-                <button class="confirm-btn secondary" id="confirmCancel"></button>
-                <button class="confirm-btn primary" id="confirmOk"></button>
+                <button class="confirm-btn secondary" id="confirmCancel">Vazgeç</button>
+                <button class="confirm-btn primary" id="confirmOk">Evet</button>
             </div>
         </div>
     </div>
@@ -439,19 +924,37 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
             <div class="matrix-rain" id="matrixRain"></div>
             <div class="avatar-glow"></div>
             <div class="avatar-container">
-                <svg id="avatarSvg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg"></svg>
+                <svg id="avatarSvg" viewBox="0 0 320 350" xmlns="http://www.w3.org/2000/svg"></svg>
                 <div class="ascii-face" id="asciiFace"></div>
             </div>
-            <div class="status-text" id="statusText"></div>
+            <div class="status-text" id="statusText">Başlatılıyor...</div>
         </div>
         <div class="chat-section">
+            <!-- History Sidebar Overlay -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+            
+            <!-- History Sidebar -->
+            <div class="history-sidebar" id="historySidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">📜 Oturum Geçmişi</div>
+                    <button class="sidebar-close" id="sidebarCloseBtn">✕</button>
+                </div>
+                <div class="sidebar-sessions" id="sidebarSessions">
+                    <!-- Sessions will be populated by JavaScript -->
+                </div>
+            </div>
+            
             <div class="chat-header">
                 <div class="chat-header-left">
-                    <h1 id="chatTitle"></h1>
-                    <button class="new-session-btn" id="newSessionBtn" title="">
-                        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                        <span class="tooltip" id="newSessionTooltip"></span>
+                    <button class="hamburger-btn" id="hamburgerBtn" title="Geçmiş">
+                        <svg viewBox="0 0 24 24">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                        <span class="tooltip">Oturum Geçmişi</span>
                     </button>
+                    <h1>🐕 Buddy</h1>
                 </div>
                 <div class="theme-selector">
                     <button class="theme-btn active" data-theme="default" onclick="setTheme('default')"><span class="tooltip">Cyberpunk</span></button>
@@ -470,15 +973,33 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
                         <div class="file-preview-name" id="fileName"></div>
                         <div class="file-preview-size" id="fileSize"></div>
                     </div>
-                    <button class="file-preview-remove" id="fileRemove" title="">✕</button>
+                    <button class="file-preview-remove" id="fileRemove" title="Kaldır">✕</button>
                 </div>
-                <div class="input-wrapper">
-                    <button id="attachButton" class="attach-button" title="">
+                <div class="input-pill" id="inputPill">
+                    <button id="attachButton" class="pill-button" title="Dosya ekle">
                         <svg viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                     </button>
-                    <input type="file" id="fileInput" style="display:none" accept="">
-                    <textarea id="chatInput" class="chat-input" placeholder="" rows="1"></textarea>
-                    <button id="sendButton" class="send-button" title="">
+                    <input type="file" id="fileInput" style="display:none" accept="image/*,video/*,audio/*,.gif,.pdf,.doc,.docx,.txt,.csv,.json,.xml,.zip">
+                    
+                    <div class="recording-ui" id="recordingUI">
+                        <div class="recording-dot"></div>
+                        <div class="recording-timer" id="recordingTimer">00:00</div>
+                        <div class="recording-waveform" id="recordingWaveform"></div>
+                        <button class="recording-cancel" id="recordingCancel">🗑️ İptal</button>
+                    </div>
+                    
+                    <textarea id="chatInput" class="chat-input" placeholder="Mesajını yaz..." rows="1"></textarea>
+                    
+                    <button id="micButton" class="pill-button" title="Ses kaydı">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </button>
+                    
+                    <button id="sendButton" class="send-button" title="Gönder">
                         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                     </button>
                 </div>
@@ -488,143 +1009,188 @@ window.CLAWDBOT_WEBCHAT_CONFIG = {
 
 <script>
 // ═══════════════════════════════════════════════════════════
-// STRINGS — Localized UI text
-// ═══════════════════════════════════════════════════════════
-const STRINGS = {
-    en: {
-        tokenPrompt: 'Enter your token to continue',
-        tokenPlaceholder: 'Token',
-        connect: 'Connect',
-        tokenEmpty: 'Token cannot be empty',
-        tokenInvalid: 'Invalid token',
-        ready: 'Ready',
-        connecting: 'Connecting...',
-        thinking: 'Thinking...',
-        working: 'Working...',
-        speaking: 'Speaking...',
-        listening: 'Listening...',
-        connectionError: 'Connection error',
-        disconnected: 'Disconnected — reconnecting...',
-        sessionExpired: 'Session expired',
-        newSession: 'New Session',
-        newSessionConfirm: 'Clear current session and start fresh?',
-        newSessionStarted: 'New session started! 🤖 How can I help?',
-        welcomeMessage: 'Connected! 🤖 How can I help you?',
-        messagePlaceholder: 'Type your message...',
-        attachFile: 'Attach file',
-        send: 'Send',
-        remove: 'Remove',
-        cancel: 'Cancel',
-        confirm: 'Yes',
-        fileTooLarge: 'File too large ({size}). Maximum: {max}',
-        fileReadError: 'Could not read file',
-        fileUploadError: 'File upload failed: ',
-        analyzeFile: 'Analyze this file: ',
-        today: 'Today',
-        yesterday: 'Yesterday',
-        starting: 'Starting...',
-        disconnectedRetrying: 'Disconnected: ',
-        error: 'Error: '
-    },
-    tr: {
-        tokenPrompt: 'Devam etmek için token girin',
-        tokenPlaceholder: 'Token',
-        connect: 'Bağlan',
-        tokenEmpty: 'Token boş olamaz',
-        tokenInvalid: 'Geçersiz token',
-        ready: 'Hazır',
-        connecting: 'Bağlanıyor...',
-        thinking: 'Düşünüyorum...',
-        working: 'Çalışıyorum...',
-        speaking: 'Konuşuyorum...',
-        listening: 'Dinliyorum...',
-        connectionError: 'Bağlantı hatası',
-        disconnected: 'Koptu — tekrar deneniyor...',
-        sessionExpired: 'Oturum sona erdi',
-        newSession: 'Yeni Oturum',
-        newSessionConfirm: 'Mevcut oturumu temizleyip yeni bir oturum başlatmak istiyor musun?',
-        newSessionStarted: 'Yeni oturum başlatıldı! 🤖 Nasıl yardımcı olabilirim?',
-        welcomeMessage: 'Bağlandım! 🤖 Nasıl yardımcı olabilirim?',
-        messagePlaceholder: 'Mesajını yaz...',
-        attachFile: 'Dosya ekle',
-        send: 'Gönder',
-        remove: 'Kaldır',
-        cancel: 'Vazgeç',
-        confirm: 'Evet',
-        fileTooLarge: 'Dosya çok büyük ({size}). Maksimum: {max}',
-        fileReadError: 'Dosya okunamadı',
-        fileUploadError: 'Dosya yüklenemedi: ',
-        analyzeFile: 'Bu dosyayı analiz et: ',
-        today: 'Bugün',
-        yesterday: 'Dün',
-        starting: 'Başlatılıyor...',
-        disconnectedRetrying: 'Koptu: ',
-        error: 'Hata: '
-    }
-};
-
-// ═══════════════════════════════════════════════════════════
-// CONFIG INITIALIZATION
-// ═══════════════════════════════════════════════════════════
-const CFG = window.CLAWDBOT_WEBCHAT_CONFIG || {};
-const L = {...STRINGS[CFG.locale||'en'], ...(CFG.strings||{})};
-
-// Set document language
-document.documentElement.lang = CFG.locale || 'en';
-
-// Set dynamic title
-document.title = CFG.name || 'Clawdbot';
-
-// ═══════════════════════════════════════════════════════════
 // FACE DEFINITIONS — Each theme gets a unique face SVG
 // ═══════════════════════════════════════════════════════════
 const FACES = {};
 
-// ── Cyberpunk (default) — Robot head, antenna, headphones ──
+// ── DEFAULT: Pure SVG Gradient AI Robot (Redrawn from scratch) ──
 FACES['default'] = `
 <defs>
-  <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#06b6d4"/>
+  <!-- Gradients for metallic head -->
+  <linearGradient id="headGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#DBE1E9"/>
+    <stop offset="100%" stop-color="#959DA8"/>
   </linearGradient>
-  <linearGradient id="grad1g" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.6"/><stop offset="100%" stop-color="#06b6d4" stop-opacity="0.6"/>
+  
+  <!-- Visor gradient (dark teal) -->
+  <radialGradient id="visorGrad" cx="50%" cy="40%" r="60%">
+    <stop offset="0%" stop-color="#17495F"/>
+    <stop offset="100%" stop-color="#001B2A"/>
+  </radialGradient>
+  
+  <!-- Body gradient -->
+  <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#C8D0DB"/>
+    <stop offset="100%" stop-color="#9BA5B0"/>
   </linearGradient>
-  <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  
+  <!-- Eye glow filter -->
+  <filter id="eyeGlow">
+    <feGaussianBlur stdDeviation="4" result="blur"/>
+    <feMerge>
+      <feMergeNode in="blur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+  
+  <!-- Shadow blur -->
+  <filter id="shadowBlur">
+    <feGaussianBlur stdDeviation="8"/>
+  </filter>
+  
+  <!-- Glow filter for particles -->
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="3" result="b"/>
+    <feMerge>
+      <feMergeNode in="b"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
 </defs>
-<!-- orbit -->
-<g class="face-orbit">
-  <circle r="3" fill="#8b5cf6" opacity=".6" filter="url(#glow)"><animateMotion dur="6s" repeatCount="indefinite" path="M160,40 A120,120 0 1,1 159,40 Z"/><animate attributeName="opacity" values=".2;.8;.2" dur="6s" repeatCount="indefinite"/></circle>
-  <circle r="2" fill="#06b6d4" opacity=".4" filter="url(#glow)"><animateMotion dur="8s" repeatCount="indefinite" path="M160,30 A130,130 0 1,0 161,30 Z"/></circle>
+
+<!-- Shadow underneath (syncs with float animation) -->
+<ellipse cx="160" cy="335" rx="65" ry="10" fill="rgba(0,0,0,.25)" filter="url(#shadowBlur)">
+  <animate attributeName="rx" values="70;60;70" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+  <animate attributeName="opacity" values=".25;.15;.25" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+</ellipse>
+
+<!-- Robot body container (floats gently) -->
+<g id="robotBody">
+  <animateTransform attributeName="transform" type="translate" 
+    values="0,0;0,-8;0,0" dur="4s" repeatCount="indefinite" 
+    calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+  
+  <!-- NECK (cylindrical, smooth) -->
+  <rect x="143" y="210" width="34" height="24" rx="12" fill="url(#headGrad)" stroke="#959DA8" stroke-width="1.5"/>
+  <!-- Neck highlight -->
+  <rect x="148" y="212" width="12" height="20" rx="6" fill="rgba(255,255,255,.1)" opacity=".5"/>
+  
+  <!-- BODY (pear/armut shape — wide shoulders, narrow bottom, SHORTENED) -->
+  <path d="M100,250 Q100,236 130,234 L190,234 Q220,236 220,250 L220,280 Q220,320 160,325 Q100,320 100,280 Z" 
+    fill="url(#bodyGrad)" stroke="#8892A0" stroke-width="2"/>
+  
+  <!-- Body chest highlight (3D effect) -->
+  <ellipse cx="140" cy="252" rx="22" ry="25" fill="rgba(255,255,255,.15)" opacity=".6"/>
+  
+  <!-- Belt/kemer line across middle -->
+  <path d="M105,280 Q160,286 215,280" fill="none" stroke="#8892A0" stroke-width="1.5" opacity=".5"/>
+  <!-- Small V on belt -->
+  <path d="M152,280 L160,288 L168,280" fill="none" stroke="#8892A0" stroke-width="1.2" opacity=".4"/>
+  
+  <!-- LEFT ARM (shoulder-attached, tapered) -->
+  <g id="leftArm">
+    <path d="M100,242 Q85,244 80,258 Q77,272 82,285 Q86,292 90,288 Q95,280 94,266 Q93,248 100,240 Z" 
+      fill="url(#bodyGrad)" stroke="#8892A0" stroke-width="1.5" opacity=".9"/>
+  </g>
+  
+  <!-- RIGHT ARM (for wave animation) -->
+  <g id="waveHand" transform-origin="220 243" opacity="1">
+    <path d="M220,242 Q235,244 240,258 Q243,272 238,285 Q234,292 230,288 Q225,280 226,266 Q227,248 220,240 Z" 
+      fill="url(#bodyGrad)" stroke="#8892A0" stroke-width="1.5" opacity=".9"/>
+  </g>
+  
+  <!-- HEAD (wider pill shape, more horizontal) -->
+  <rect x="88" y="82" width="144" height="135" rx="50" fill="url(#headGrad)" stroke="#959DA8" stroke-width="2.5"/>
+  
+  <!-- Head highlight (3D metallic effect) -->
+  <ellipse cx="128" cy="112" rx="38" ry="35" fill="rgba(255,255,255,.12)" opacity=".7"/>
+  
+  <!-- TOP BUMP (cap/hair) -->
+  <ellipse cx="160" cy="78" rx="22" ry="11" fill="url(#headGrad)" stroke="#959DA8" stroke-width="2"/>
+  <ellipse cx="160" cy="75" rx="18" ry="7" fill="rgba(255,255,255,.1)"/>
+  
+  <!-- LEFT EAR (headphone style) -->
+  <rect x="75" y="120" width="18" height="35" rx="9" fill="url(#headGrad)" stroke="#8892A0" stroke-width="1.5"/>
+  <ellipse cx="84" cy="137" rx="5" ry="8" fill="rgba(0,0,0,.15)"/>
+  
+  <!-- RIGHT EAR -->
+  <rect x="227" y="120" width="18" height="35" rx="9" fill="url(#headGrad)" stroke="#8892A0" stroke-width="1.5"/>
+  <ellipse cx="236" cy="137" rx="5" ry="8" fill="rgba(0,0,0,.15)"/>
+  
+  <!-- VISOR/SCREEN (wide pill shape) -->
+  <rect x="100" y="108" width="120" height="90" rx="30" fill="url(#visorGrad)" stroke="#0E2A3A" stroke-width="2"/>
+  
+  <!-- Visor subtle shine -->
+  <rect x="106" y="114" width="35" height="50" rx="14" fill="rgba(255,255,255,.03)" opacity=".5"/>
+  
+  <!-- Visor grid lines (subtle, like reference) -->
+  <line x1="160" y1="112" x2="160" y2="194" stroke="rgba(97,201,219,.08)" stroke-width="1"/>
+  <line x1="104" y1="153" x2="216" y2="153" stroke="rgba(97,201,219,.08)" stroke-width="1"/>
+  
+  <!-- LEFT EYE -->
+  <g id="leftEye">
+    <!-- Eye white/base (fixed, does NOT move) -->
+    <circle cx="135" cy="145" r="18" fill="#61C9DB" filter="url(#eyeGlow)" opacity=".95"/>
+    <!-- Pupil (smaller, moves with mouse) -->
+    <circle id="leftPupil" cx="135" cy="145" r="7" fill="#0E2A3A"/>
+    <!-- Highlight spot on pupil -->
+    <circle class="eyeHighlightL" cx="138" cy="142" r="3" fill="white" opacity=".8"/>
+  </g>
+  
+  <!-- RIGHT EYE -->
+  <g id="rightEye">
+    <!-- Eye white/base (fixed, does NOT move) -->
+    <circle cx="185" cy="145" r="18" fill="#61C9DB" filter="url(#eyeGlow)" opacity=".95"/>
+    <!-- Pupil (smaller, moves with mouse) -->
+    <circle id="rightPupil" cx="185" cy="145" r="7" fill="#0E2A3A"/>
+    <!-- Highlight spot on pupil -->
+    <circle class="eyeHighlightR" cx="188" cy="142" r="3" fill="white" opacity=".8"/>
+  </g>
+  
+  <!-- Eye glow overlays (for thinking/speaking states) -->
+  <circle id="leftEyeGlowOverlay" cx="135" cy="145" r="22" fill="#61C9DB" opacity="0" filter="url(#eyeGlow)"/>
+  <circle id="rightEyeGlowOverlay" cx="185" cy="145" r="22" fill="#61C9DB" opacity="0" filter="url(#eyeGlow)"/>
+  
+  <!-- Eyelids (for blink animation) -->
+  <rect id="leftEyelid" x="117" y="135" width="36" height="0" fill="#0E2A3A" opacity="0" rx="4"/>
+  <rect id="rightEyelid" x="167" y="135" width="36" height="0" fill="#0E2A3A" opacity="0" rx="4"/>
+  
+  <!-- MOUTH (smile arc) -->
+  <path id="mouthSmile" d="M 135 175 Q 160 185 185 175" 
+    stroke="#61C9DB" stroke-width="3" fill="none" stroke-linecap="round" opacity="1" filter="url(#eyeGlow)"/>
+  
+  <!-- MOUTH BARS (equalizer for speaking) -->
+  <g id="mouthBars" opacity="0">
+    <rect x="138" y="172" width="4" height="10" rx="2" fill="#61C9DB" filter="url(#eyeGlow)">
+      <animate attributeName="height" values="10;20;10" dur=".4s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="172;162;172" dur=".4s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="147" y="170" width="4" height="14" rx="2" fill="#61C9DB" filter="url(#eyeGlow)">
+      <animate attributeName="height" values="14;24;14" dur=".5s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="170;160;170" dur=".5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="156" y="168" width="4" height="18" rx="2" fill="#61C9DB" filter="url(#eyeGlow)">
+      <animate attributeName="height" values="18;28;18" dur=".3s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="168;158;168" dur=".3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="165" y="170" width="4" height="14" rx="2" fill="#61C9DB" filter="url(#eyeGlow)">
+      <animate attributeName="height" values="14;22;14" dur=".45s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="170;162;170" dur=".45s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="174" y="172" width="4" height="10" rx="2" fill="#61C9DB" filter="url(#eyeGlow)">
+      <animate attributeName="height" values="10;18;10" dur=".38s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="172;164;172" dur=".38s" repeatCount="indefinite"/>
+    </rect>
+  </g>
 </g>
-<circle id="workingRing" cx="160" cy="160" r="140" fill="none" stroke="url(#grad1)" stroke-width="3" stroke-dasharray="20 10" opacity="0" filter="url(#glow)">
-  <animateTransform id="ringRotate" attributeName="transform" type="rotate" from="0 160 160" to="360 160 160" dur="2s" repeatCount="0"/>
+
+<!-- Working ring (spinning dashed circle) -->
+<circle id="workingRing" cx="160" cy="160" r="155" fill="none" stroke="#61C9DB" stroke-width="2" stroke-dasharray="12 8" opacity="0" filter="url(#glow)">
+  <animateTransform id="ringRotate" attributeName="transform" type="rotate" 
+    from="0 160 160" to="360 160 160" dur="2s" repeatCount="0"/>
 </circle>
-<!-- head -->
-<circle cx="160" cy="160" r="80" fill="#0a0a12" stroke="url(#grad1)" stroke-width="3"/>
-<circle cx="160" cy="140" r="60" fill="url(#grad1g)" opacity=".05"><animate attributeName="opacity" values=".03;.08;.03" dur="4s" repeatCount="indefinite"/></circle>
-<!-- antenna -->
-<line x1="160" y1="80" x2="160" y2="50" stroke="url(#grad1)" stroke-width="2.5"/>
-<circle cx="160" cy="45" r="6" fill="url(#grad1)" filter="url(#glow)"><animate attributeName="opacity" values="1;.4;1" dur="2s" repeatCount="indefinite"/><animate attributeName="r" values="6;7;6" dur="2s" repeatCount="indefinite"/></circle>
-<circle cx="160" cy="45" r="12" fill="none" stroke="#8b5cf6" stroke-width="1" opacity="0"><animate attributeName="r" values="8;20" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0" dur="2s" repeatCount="indefinite"/></circle>
-<!-- ears -->
-<ellipse cx="90" cy="160" rx="15" ry="25" fill="#0a0a12" stroke="url(#grad1)" stroke-width="2.5"/>
-<ellipse cx="90" cy="160" rx="8" ry="15" fill="url(#grad1g)"><animate attributeName="opacity" values=".6;.3;.6" dur="3s" repeatCount="indefinite"/></ellipse>
-<ellipse cx="230" cy="160" rx="15" ry="25" fill="#0a0a12" stroke="url(#grad1)" stroke-width="2.5"/>
-<ellipse cx="230" cy="160" rx="8" ry="15" fill="url(#grad1g)"><animate attributeName="opacity" values=".3;.6;.3" dur="3s" repeatCount="indefinite"/></ellipse>
-<!-- eyes -->
-<g id="leftEye"><circle cx="135" cy="150" r="18" fill="rgba(6,182,212,.2)"/><circle id="leftPupil" cx="135" cy="150" r="10" fill="url(#grad1)" filter="url(#glow)"/><circle cx="138" cy="147" r="3" fill="white" opacity=".8"/></g>
-<g id="rightEye"><circle cx="185" cy="150" r="18" fill="rgba(6,182,212,.2)"/><circle id="rightPupil" cx="185" cy="150" r="10" fill="url(#grad1)" filter="url(#glow)"/><circle cx="188" cy="147" r="3" fill="white" opacity=".8"/></g>
-<rect id="leftEyelid" x="117" y="132" width="36" height="0" fill="#0a0a12" opacity="0"/>
-<rect id="rightEyelid" x="167" y="132" width="36" height="0" fill="#0a0a12" opacity="0"/>
-<!-- mouth -->
-<path id="mouthSmile" d="M 130 190 Q 160 205 190 190" stroke="url(#grad1)" stroke-width="3" fill="none" filter="url(#glow)"/>
-<g id="mouthBars" opacity="0">
-  <rect x="138" y="185" width="5" height="15" fill="url(#grad1)" rx="2.5" filter="url(#glow)"><animate attributeName="height" values="15;28;15" dur=".4s" repeatCount="indefinite"/><animate attributeName="y" values="185;172;185" dur=".4s" repeatCount="indefinite"/></rect>
-  <rect x="149" y="180" width="5" height="20" fill="url(#grad1)" rx="2.5" filter="url(#glow)"><animate attributeName="height" values="20;35;20" dur=".5s" repeatCount="indefinite"/><animate attributeName="y" values="180;165;180" dur=".5s" repeatCount="indefinite"/></rect>
-  <rect x="160" y="175" width="5" height="30" fill="url(#grad1)" rx="2.5" filter="url(#glow)"><animate attributeName="height" values="30;42;30" dur=".3s" repeatCount="indefinite"/><animate attributeName="y" values="175;163;175" dur=".3s" repeatCount="indefinite"/></rect>
-  <rect x="171" y="178" width="5" height="22" fill="url(#grad1)" rx="2.5" filter="url(#glow)"><animate attributeName="height" values="22;32;22" dur=".45s" repeatCount="indefinite"/><animate attributeName="y" values="178;168;178" dur=".45s" repeatCount="indefinite"/></rect>
-  <rect x="182" y="183" width="5" height="17" fill="url(#grad1)" rx="2.5" filter="url(#glow)"><animate attributeName="height" values="17;26;17" dur=".35s" repeatCount="indefinite"/><animate attributeName="y" values="183;174;183" dur=".35s" repeatCount="indefinite"/></rect>
-</g>
+
+<!-- Thinking particles container -->
 <g id="thinkingParticles" opacity="0"></g>
 `;
 
@@ -847,7 +1413,7 @@ FACES['ocean'] = `
 <path d="M220,160 Q225,200 215,230 Q210,245 220,260" fill="none" stroke="#64ffda" stroke-width="2" opacity=".5">
   <animate attributeName="d" values="M220,160 Q225,200 215,230 Q210,245 220,260;M220,160 Q210,200 225,230 Q230,245 215,260;M220,160 Q225,200 215,230 Q210,245 220,260" dur="4.2s" repeatCount="indefinite"/>
 </path>
-<!-- eyes — round bioluminescent -->
+<!-- Enhanced eyes with glow -->
 <g id="leftEye">
   <circle cx="135" cy="125" r="18" fill="rgba(100,255,218,.1)"/>
   <circle cx="135" cy="125" r="12" fill="rgba(100,255,218,.08)" stroke="#64ffda" stroke-width="1"/>
@@ -877,10 +1443,8 @@ FACES['ocean'] = `
 FACES['ascii'] = FACES['default']; // fallback SVG (hidden by CSS)
 
 // ═══════════════════════════════════════════════════════════
-// Eye position config per face (pupil centers & eyelid rects)
-// ═══════════════════════════════════════════════════════════
 const EYE_CONFIG = {
-    'default':    { lx:135, ly:150, rx:185, ry:150, elx:117, ely:132, erx:167, ery:132, ew:36, maxOff:5 },
+    'default':    { lx:135, ly:145, rx:185, ry:145, elx:117, ely:135, erx:167, ery:135, ew:36, maxOff:9 },
     'matrix':     { lx:137, ly:148, rx:182, ry:148, elx:120, ely:135, erx:165, ery:135, ew:35, maxOff:3 },
     'god':        { lx:135, ly:150, rx:185, ry:150, elx:110, ely:138, erx:165, ery:138, ew:50, maxOff:5 },
     'futuristic': { lx:140, ly:148, rx:180, ry:148, elx:125, ely:138, erx:165, ery:138, ew:30, maxOff:4 },
@@ -940,7 +1504,9 @@ const ASCII_FACES = {
 const state = {
     ws: null, token: null, sessionKey: null, currentState: 'idle',
     connected: false, streamingMessage: null, streamBuffer: '',
-    currentTheme: localStorage.getItem('clawdbot-webchat-theme') || (CFG.defaultTheme || 'default')
+    currentTheme: localStorage.getItem('buddy-theme') || 'default',
+    isRecording: false, mediaRecorder: null, audioChunks: [], recordingStartTime: null,
+    recordingInterval: null, speechRecognition: null, speechText: '', sessions: []
 };
 
 const $ = id => document.getElementById(id);
@@ -950,54 +1516,44 @@ const el = {
     avatarSvg: $('avatarSvg'), asciiFace: $('asciiFace'),
     bgParticles: $('bgParticles'), matrixRain: $('matrixRain'),
     avatarContainer: document.querySelector('.avatar-container'),
+    micButton: $('micButton'),
+    inputPill: $('inputPill'),
+    recordingUI: $('recordingUI'),
+    recordingTimer: $('recordingTimer'),
+    recordingWaveform: $('recordingWaveform'),
+    recordingCancel: $('recordingCancel')
 };
 
 // ═══════════════════════════════════════════════════════════
-// INITIALIZE UI WITH CONFIG
-// ═══════════════════════════════════════════════════════════
-function initUI() {
-    const botTitle = `${CFG.emoji || '🤖'} ${CFG.name || 'Clawdbot'}`;
-    $('loginTitle').textContent = botTitle;
-    $('loginSubtitle').textContent = L.tokenPrompt;
-    $('tokenInput').placeholder = L.tokenPlaceholder;
-    $('loginButton').textContent = L.connect;
-    $('chatTitle').textContent = botTitle;
-    $('newSessionTooltip').textContent = L.newSession;
-    $('newSessionBtn').title = L.newSession;
-    $('chatInput').placeholder = L.messagePlaceholder;
-    $('attachButton').title = L.attachFile;
-    $('sendButton').title = L.send;
-    $('fileRemove').title = L.remove;
-    $('confirmCancel').textContent = L.cancel;
-    $('confirmOk').textContent = L.confirm;
-    $('fileInput').accept = CFG.allowedFileTypes || 'image/*,video/*,audio/*,.gif,.pdf,.doc,.docx,.txt,.csv,.json,.xml,.zip';
-    el.statusText.textContent = L.starting;
-}
-
-initUI();
-
-// ═══════════════════════════════════════════════════════════
-// THEME ENGINE
+// THEME ENGINE (with crossfade)
 // ═══════════════════════════════════════════════════════════
 function setTheme(theme) {
-    if (theme === 'default') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', theme);
-    state.currentTheme = theme;
-    localStorage.setItem('clawdbot-webchat-theme', theme);
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
+    // Add fade transition class
+    document.body.style.opacity = '0.7';
+    
+    setTimeout(() => {
+        if (theme === 'default') document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', theme);
+        state.currentTheme = theme;
+        localStorage.setItem('buddy-theme', theme);
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
 
-    // Swap face SVG
-    el.avatarSvg.innerHTML = FACES[theme] || FACES['default'];
-    // Re-grab dynamic elements
-    refreshFaceElements();
+        // Swap face SVG
+        el.avatarSvg.innerHTML = FACES[theme] || FACES['default'];
+        // Re-grab dynamic elements
+        refreshFaceElements();
 
-    if (theme === 'matrix') initMatrixRain();
-    if (theme === 'ascii') startAsciiAnimation();
+        if (theme === 'matrix') initMatrixRain();
+        if (theme === 'ascii') startAsciiAnimation();
 
-    // Re-apply current state visuals
-    const s = state.currentState;
-    state.currentState = ''; // force re-apply
-    setState(s || 'idle');
+        // Re-apply current state visuals
+        const s = state.currentState;
+        state.currentState = ''; // force re-apply
+        setState(s || 'idle');
+        
+        // Fade back in
+        document.body.style.opacity = '1';
+    }, 200);
 }
 
 function refreshFaceElements() {
@@ -1010,6 +1566,11 @@ function refreshFaceElements() {
     el.workingRing = $('workingRing');
     el.ringRotate = $('ringRotate');
     el.thinkingParticles = $('thinkingParticles');
+    el.leftEyeGlow = $('leftEyeGlow');
+    el.rightEyeGlow = $('rightEyeGlow');
+    el.leftEyeGlowOverlay = $('leftEyeGlowOverlay');
+    el.rightEyeGlowOverlay = $('rightEyeGlowOverlay');
+    el.waveHand = $('waveHand');
 }
 
 setTheme(state.currentTheme);
@@ -1033,7 +1594,7 @@ initBgParticles();
 
 function initMatrixRain() {
     el.matrixRain.innerHTML = '';
-    const c = 'アイウエオカキクケコサシスセソタチツテト0123456789';
+    const c = 'アイウエオカキクケコサシスセソタチツテト0123456789BUDDY';
     for (let i=0;i<25;i++) {
         const col = document.createElement('div');
         col.className='matrix-column';
@@ -1068,15 +1629,15 @@ function updateAsciiFace(s) {
 // TOKEN & AUTH
 // ═══════════════════════════════════════════════════════════
 function getTokenFromURL(){const m=window.location.search.match(/[?&]token=([^&]*)/);if(m)return m[1].replace(/%2B/gi,'+').replace(/%3D/gi,'=').replace(/%2F/gi,'/');return new URLSearchParams(window.location.search).get('token');}
-function getToken(){return getTokenFromURL()||localStorage.getItem('clawdbot-webchat-token')||null;}
-function saveToken(t){localStorage.setItem('clawdbot-webchat-token',t);}
+function getToken(){return getTokenFromURL()||localStorage.getItem('buddy-token')||null;}
+function saveToken(t){localStorage.setItem('buddy-token',t);}
 function uuid(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
-function fmtTime(d){const locale = CFG.locale === 'tr' ? 'tr-TR' : 'en-US'; return d.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'});}
+function fmtTime(d){return d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});}
 
 const loginOverlay=$('loginOverlay'),tokenInput=$('tokenInput'),loginButton=$('loginButton'),loginError=$('loginError');
 function showLogin(){loginOverlay.classList.remove('hidden');}
 function hideLogin(){loginOverlay.classList.add('hidden');}
-function handleLogin(){const t=tokenInput.value.trim();if(!t){loginError.textContent=L.tokenEmpty;return;}loginError.textContent='';saveToken(t);state.token=t;hideLogin();connectWebSocket();}
+function handleLogin(){const t=tokenInput.value.trim();if(!t){loginError.textContent='Token boş olamaz';return;}loginError.textContent='';saveToken(t);state.token=t;hideLogin();connectWebSocket();}
 loginButton.addEventListener('click',handleLogin);
 tokenInput.addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
 
@@ -1088,34 +1649,178 @@ function connectWebSocket(){
     if(!state.token){showLogin();return;}
     hideLogin();
     const p=location.protocol==='https:'?'wss:':'ws:';
-    el.statusText.textContent=L.connecting;
+    el.statusText.textContent='Bağlanıyor...';
     state.ws=new WebSocket(`${p}//${location.host}`);
-    state.ws.onopen=()=>state.ws.send(JSON.stringify({type:'req',id:uuid(),method:'connect',params:{minProtocol:3,maxProtocol:3,client:{id:'clawdbot-webchat-ui',version:'1.0.0',platform:'web',mode:'webchat'},auth:{token:state.token},caps:[]}}));
+    state.ws.onopen=()=>state.ws.send(JSON.stringify({type:'req',id:uuid(),method:'connect',params:{minProtocol:3,maxProtocol:3,client:{id:'clawdbot-control-ui',version:'1.0.0',platform:'web',mode:'webchat'},auth:{token:state.token},caps:[]}}));
     state.ws.onmessage=e=>{try{handleMsg(JSON.parse(e.data))}catch(er){console.error(er);}};
-    state.ws.onerror=()=>{el.statusText.textContent=L.connectionError;setState('idle');};
+    state.ws.onerror=()=>{el.statusText.textContent='Bağlantı hatası';setState('idle');};
     state.ws.onclose=ev=>{
         state.connected=false;setState('idle');
         if(ev.code===4001||ev.code===4003||(ev.reason&&ev.reason.toLowerCase().includes('auth'))){
-            localStorage.removeItem('clawdbot-webchat-token');state.token=null;
-            el.statusText.textContent=L.sessionExpired;showLogin();loginError.textContent=L.tokenInvalid;
-        }else{el.statusText.textContent=ev.reason?`${L.disconnectedRetrying}${ev.reason}`:L.disconnected;setTimeout(connectWebSocket,5000);}
+            localStorage.removeItem('buddy-token');state.token=null;
+            el.statusText.textContent='Oturum sona erdi';showLogin();loginError.textContent='Geçersiz token';
+        }else{el.statusText.textContent=ev.reason?`Koptu: ${ev.reason}`:'Koptu — tekrar deneniyor...';setTimeout(connectWebSocket,5000);}
     };
 }
 
-function getSessionKey(){
-    return CFG.sessionKey || 'main';
+// ═══════════════════════════════════════════════════════════
+// SESSION MANAGEMENT (Multi-Session Support)
+// ═══════════════════════════════════════════════════════════
+const SESSIONS_STORAGE_KEY = 'buddy-sessions';
+const ACTIVE_SESSION_KEY = 'buddy-active-session';
+const OLD_SESSION_KEY = 'agent:main:buddy-ui'; // Legacy key for migration
+
+function loadSessions() {
+    const stored = localStorage.getItem(SESSIONS_STORAGE_KEY);
+    if (stored) {
+        try {
+            state.sessions = JSON.parse(stored);
+        } catch(e) {
+            state.sessions = [];
+        }
+    } else {
+        state.sessions = [];
+    }
+    return state.sessions;
+}
+
+function saveSessions() {
+    localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(state.sessions));
+}
+
+function createSession(label = 'Yeni Oturum') {
+    const sessionKey = `agent:main:buddy-ui:${Date.now()}`;
+    const session = {
+        key: sessionKey,
+        label: label,
+        createdAt: Date.now()
+    };
+    state.sessions.unshift(session); // Add to beginning
+    saveSessions();
+    return session;
+}
+
+function updateSessionLabel(sessionKey, newLabel) {
+    const session = state.sessions.find(s => s.key === sessionKey);
+    if (session && newLabel && newLabel.trim()) {
+        session.label = newLabel.trim().substring(0, 50);
+        saveSessions();
+    }
+}
+
+function setActiveSession(sessionKey) {
+    state.sessionKey = sessionKey;
+    localStorage.setItem(ACTIVE_SESSION_KEY, sessionKey);
+}
+
+async function deleteSession(sessionKey) {
+    const session = state.sessions.find(s => s.key === sessionKey);
+    const label = session ? (session.label || 'Oturum') : 'Oturum';
+    
+    if (!await customConfirm(`"${label}" oturumunu silmek istediğine emin misin?`)) return;
+    
+    // Remove from sessions array
+    state.sessions = state.sessions.filter(s => s.key !== sessionKey);
+    saveSessions();
+    
+    // If we deleted the active session, switch to another or create new
+    if (state.sessionKey === sessionKey) {
+        if (state.sessions.length > 0) {
+            // Switch to the most recent remaining session
+            const newest = [...state.sessions].sort((a, b) => b.createdAt - a.createdAt)[0];
+            setActiveSession(newest.key);
+            
+            // Clear and load that session's history
+            el.chatMessages.innerHTML = '';
+            state.lastDateLabel = '';
+            state.streamingMessage = null;
+            state.streamBuffer = '';
+            hideTypingIndicator();
+            setState('idle');
+            
+            state.historyReqId = uuid();
+            state.ws.send(JSON.stringify({
+                type: 'req', id: state.historyReqId, method: 'chat.history',
+                params: { sessionKey: newest.key, limit: 100 }
+            }));
+        } else {
+            // No sessions left, create a fresh one
+            const fresh = createSession('Yeni Oturum');
+            setActiveSession(fresh.key);
+            
+            el.chatMessages.innerHTML = '';
+            state.lastDateLabel = '';
+            state.streamingMessage = null;
+            state.streamBuffer = '';
+            hideTypingIndicator();
+            setState('idle');
+            addMessage('assistant', 'Yeni oturum başlatıldı! 🤖');
+        }
+    }
+    
+    // Re-render sidebar
+    populateSessions();
+}
+
+function getActiveSession() {
+    return localStorage.getItem(ACTIVE_SESSION_KEY) || null;
+}
+
+function getSessionKey() {
+    // If already set in state, use it
+    if (state.sessionKey) return state.sessionKey;
+    
+    // Load sessions from storage
+    loadSessions();
+    
+    // Check if there's an active session
+    let activeKey = getActiveSession();
+    
+    // Migration: if no sessions exist but old session has data, migrate it
+    if (state.sessions.length === 0) {
+        // Create first session with legacy key
+        const firstSession = createSession('İlk Oturum');
+        activeKey = firstSession.key;
+        setActiveSession(activeKey);
+    }
+    
+    // If active session doesn't exist in sessions list, create it
+    if (activeKey && !state.sessions.find(s => s.key === activeKey)) {
+        state.sessions.unshift({
+            key: activeKey,
+            label: 'Mevcut Oturum',
+            createdAt: Date.now()
+        });
+        saveSessions();
+    }
+    
+    // If no active session, use first session or create new one
+    if (!activeKey && state.sessions.length > 0) {
+        activeKey = state.sessions[0].key;
+        setActiveSession(activeKey);
+    }
+    
+    state.sessionKey = activeKey;
+    return activeKey;
 }
 
 function handleMsg(m){
-    console.log('[clawdbot-webchat]',m.type,m.event||m.id||'',m.payload?.type||m.payload?.status||'');
+    console.log('[buddy-ws]',m.type,m.event||m.id||'',m.payload?.type||m.payload?.status||'');
     if(m.type==='res'&&!state.connected){
         if(m.error||m.ok===false){
             const e=m.error?.message||JSON.stringify(m.error);
             if(e&&(e.includes('auth')||e.includes('token')||e.includes('denied'))){
-                localStorage.removeItem('clawdbot-webchat-token');state.token=null;showLogin();loginError.textContent=L.tokenInvalid;state.ws.close();
-            }else el.statusText.textContent=L.error+e;
+                localStorage.removeItem('buddy-token');state.token=null;showLogin();loginError.textContent='Geçersiz token';state.ws.close();
+            }else el.statusText.textContent='Hata: '+e;
             setState('idle');
-        }else{state.connected=true;state.sessionKey=getSessionKey();saveToken(state.token);el.statusText.textContent=L.ready;setState('idle');loadHistory();}
+        }else{
+            state.connected=true;
+            getSessionKey(); // Initialize session
+            saveToken(state.token);
+            el.statusText.textContent='Hazır';
+            setState('idle');
+            loadHistory();
+        }
     }else if(m.type==='res'&&state.connected&&state.historyReqId&&m.id===state.historyReqId){handleHistoryResponse(m);}
     else if(m.type==='res'&&state.connected&&m.payload?.messages){handleHistoryResponse(m);}
     else if(m.type==='event'&&m.event==='agent'){handleAgent(m);}
@@ -1131,10 +1836,10 @@ function loadHistory(){
 
 function handleHistoryResponse(m){
     state.historyReqId=null;
-    console.log('[clawdbot-webchat] history payload keys:', Object.keys(m.payload||{}));
+    console.log('[buddy-ws] history payload keys:', Object.keys(m.payload||{}));
     const msgs=m.payload?.messages||m.result?.messages||[];
-    console.log('[clawdbot-webchat] history messages count:', msgs.length);
-    if(msgs.length===0){addMessage('assistant',L.welcomeMessage);return;}
+    console.log('[buddy-ws] history messages count:', msgs.length);
+    if(msgs.length===0){addMessage('assistant','Bağlandım! 🤖 Nasıl yardımcı olabilirim?');triggerGreetingWave();return;}
     el.chatMessages.innerHTML='';
     state.lastDateLabel='';
     for(const msg of msgs){
@@ -1156,10 +1861,9 @@ function formatDateSeparator(d){
     const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
     const msgDay=new Date(d.getFullYear(),d.getMonth(),d.getDate());
     const diff=Math.floor((today-msgDay)/(1000*60*60*24));
-    if(diff===0)return L.today;
-    if(diff===1)return L.yesterday;
-    const locale = CFG.locale === 'tr' ? 'tr-TR' : 'en-US';
-    return d.toLocaleDateString(locale,{day:'numeric',month:'long',year:'numeric'});
+    if(diff===0)return'Bugün';
+    if(diff===1)return'Dün';
+    return d.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
 }
 
 function addDateSeparator(label){
@@ -1172,6 +1876,13 @@ function addDateSeparator(label){
 function showTypingIndicator(){
     if(document.getElementById('typingIndicator'))return;
     const m=document.createElement('div');m.className='typing-indicator';m.id='typingIndicator';
+    
+    // Add avatar for assistant
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = '🐕';
+    m.appendChild(avatar);
+    
     const c=document.createElement('div');c.className='message-content';
     const b=document.createElement('div');b.className='typing-bubble';
     b.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
@@ -1235,7 +1946,7 @@ async function sendMessage(){
         el.chatInput.value='';autoResize();setState('thinking');showTypingIndicator();
         try{
             const fd=await uploadFile(file);
-            const msg=t||`${L.analyzeFile}${file.name}`;
+            const msg=t||`Bu dosyayı analiz et: ${file.name}`;
             const attachments=[{
                 type:file.type.startsWith('image/')?'image':'file',
                 mimeType:file.type||'application/octet-stream',
@@ -1251,7 +1962,7 @@ async function sendMessage(){
             }}));
         }catch(err){
             hideTypingIndicator();setState('idle');
-            addMessage('assistant','❌ '+L.fileUploadError+err.message);
+            addMessage('assistant','❌ Dosya yüklenemedi: '+err.message);
         }
     }else{
         addMessage('user',t);
@@ -1279,7 +1990,27 @@ function addMessage(sender,text,streaming=false,timestamp=null,attachment=null){
     const dateStr=formatDateSeparator(ts instanceof Date?ts:new Date(ts));
     if(dateStr!==state.lastDateLabel){addDateSeparator(dateStr);state.lastDateLabel=dateStr;}
 
+    // Auto-update session label on first user message
+    if (sender === 'user' && text && text.trim() && state.sessionKey) {
+        const session = state.sessions.find(s => s.key === state.sessionKey);
+        if (session && (session.label === 'Yeni Oturum' || session.label === 'İlk Oturum' || session.label === 'Mevcut Oturum')) {
+            const label = text.trim().substring(0, 50);
+            updateSessionLabel(state.sessionKey, label);
+        }
+    }
+
     const m=document.createElement('div');m.className=`message ${sender}`;
+    
+    // IMPROVEMENT #1: Add avatar
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    if (sender === 'assistant') {
+        avatar.textContent = '🐕';
+    } else {
+        avatar.textContent = 'O';
+    }
+    m.appendChild(avatar);
+    
     const c=document.createElement('div');c.className='message-content';
     const b=document.createElement('div');b.className='message-bubble';
     
@@ -1380,21 +2111,17 @@ function clearFile(){state.pendingFile=null;filePreview.classList.remove('active
 function formatFileSize(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 function getFileIcon(name){const ext=name.split('.').pop().toLowerCase();return{pdf:'📄',doc:'📝',docx:'📝',txt:'📄',csv:'📊',json:'🔧',xml:'🔧',zip:'📦',mp4:'🎬',mov:'🎬',avi:'🎬',webm:'🎬',mp3:'🎵',wav:'🎵',ogg:'🎵',flac:'🎵',gif:'🎞️',png:'🖼️',jpg:'🖼️',jpeg:'🖼️',webp:'🖼️'}[ext]||'📎';}
 
-const MAX_FILE_SIZE = CFG.maxFileSize || (5*1024*1024); // 5MB gateway limit
+const MAX_FILE_SIZE=5*1024*1024; // 5MB gateway limit
 
 async function uploadFile(file){
-    if(file.size>MAX_FILE_SIZE){
-        const sizeStr = formatFileSize(file.size);
-        const maxStr = formatFileSize(MAX_FILE_SIZE);
-        throw new Error(L.fileTooLarge.replace('{size}', sizeStr).replace('{max}', maxStr));
-    }
+    if(file.size>MAX_FILE_SIZE)throw new Error(`Dosya çok büyük (${formatFileSize(file.size)}). Maksimum: ${formatFileSize(MAX_FILE_SIZE)}`);
     const reader=new FileReader();
     return new Promise((resolve,reject)=>{
         reader.onload=()=>{
             const base64=reader.result.split(',')[1];
             resolve({name:file.name,type:file.type,size:file.size,data:base64});
         };
-        reader.onerror=()=>reject(new Error(L.fileReadError));
+        reader.onerror=()=>reject(new Error('Dosya okunamadı'));
         reader.readAsDataURL(file);
     });
 }
@@ -1412,7 +2139,224 @@ chatSection.addEventListener('drop',e=>{
 function autoResize(){const i=el.chatInput;i.style.height='auto';i.style.height=Math.min(i.scrollHeight,120)+'px';}
 
 // ═══════════════════════════════════════════════════════════
-// AVATAR STATE
+// IMPROVEMENT #3: VOICE RECORDING
+// ═══════════════════════════════════════════════════════════
+function initWaveform() {
+    el.recordingWaveform.innerHTML = '';
+    for (let i = 0; i < 15; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'recording-bar';
+        bar.style.setProperty('--duration', (0.3 + Math.random() * 0.3) + 's');
+        bar.style.setProperty('--height', (12 + Math.random() * 12) + 'px');
+        el.recordingWaveform.appendChild(bar);
+    }
+}
+
+function startRecordingTimer() {
+    state.recordingStartTime = Date.now();
+    state.recordingInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - state.recordingStartTime) / 1000);
+        const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const secs = (elapsed % 60).toString().padStart(2, '0');
+        el.recordingTimer.textContent = `${mins}:${secs}`;
+    }, 1000);
+}
+
+function stopRecordingTimer() {
+    if (state.recordingInterval) {
+        clearInterval(state.recordingInterval);
+        state.recordingInterval = null;
+    }
+    el.recordingTimer.textContent = '00:00';
+}
+
+async function startRecording() {
+    try {
+        // Dual mode: MediaRecorder for audio file + SpeechRecognition for live transcript
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // MediaRecorder setup for audio playback in chat
+        let mimeType = 'audio/webm;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'audio/mp4';
+                if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
+            }
+        }
+        const options = mimeType ? { mimeType } : {};
+        state.mediaRecorder = new MediaRecorder(stream, options);
+        state.audioChunks = [];
+        state.speechText = '';
+        
+        state.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) state.audioChunks.push(event.data);
+        };
+        
+        state.mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Stop speech recognition too
+            if (state.speechRecognition) {
+                try { state.speechRecognition.stop(); } catch(e) {}
+                state.speechRecognition = null;
+            }
+            
+            if (state.audioChunks.length === 0 && !state.speechText) return;
+            
+            // Build audio blob for playback preview
+            const audioBlob = state.audioChunks.length > 0 
+                ? new Blob(state.audioChunks, { type: state.mediaRecorder.mimeType || 'audio/webm' })
+                : null;
+            const fileName = `voice-${Date.now()}.webm`;
+            
+            // Get the transcribed text
+            let transcript = (state.speechText || '').trim();
+            
+            if (transcript) {
+                // Show user message with audio player + transcript
+                if (audioBlob) {
+                    const thumbUrl = URL.createObjectURL(audioBlob);
+                    addMessage('user', transcript, false, null, { type: 'audio', url: thumbUrl, name: fileName });
+                } else {
+                    addMessage('user', '🎤 ' + transcript);
+                }
+                
+                // Send transcript as text message
+                setState('thinking');
+                showTypingIndicator();
+                state.ws.send(JSON.stringify({
+                    type: 'req', id: uuid(), method: 'chat.send',
+                    params: { sessionKey: state.sessionKey, message: transcript, deliver: false, idempotencyKey: uuid() }
+                }));
+            } else {
+                // No transcript - show audio and ask to process
+                if (audioBlob) {
+                    const thumbUrl = URL.createObjectURL(audioBlob);
+                    addMessage('user', '🎤 (ses tanınamadı)', false, null, { type: 'audio', url: thumbUrl, name: fileName });
+                }
+                addMessage('assistant', '⚠️ Ses tanınamadı. Lütfen daha net konuşmayı deneyin veya metin olarak yazın.');
+                setState('idle');
+            }
+        };
+        
+        // Start Speech Recognition (browser built-in)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            state.speechRecognition = new SpeechRecognition();
+            state.speechRecognition.continuous = true;
+            state.speechRecognition.interimResults = true;
+            state.speechRecognition.lang = 'tr-TR'; // Turkish first, also picks up English
+            state.speechRecognition.maxAlternatives = 1;
+            
+            state.speechRecognition.onresult = (event) => {
+                let finalText = '';
+                let interimText = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalText += event.results[i][0].transcript;
+                    } else {
+                        interimText += event.results[i][0].transcript;
+                    }
+                }
+                state.speechText = finalText || interimText;
+                // Show live transcript in recording UI
+                if (el.recordingTimer && state.speechText) {
+                    el.recordingTimer.textContent = state.speechText.substring(0, 40) + (state.speechText.length > 40 ? '...' : '');
+                    el.recordingTimer.style.fontSize = '0.75rem';
+                }
+            };
+            
+            state.speechRecognition.onerror = (event) => {
+                console.warn('Speech recognition error:', event.error);
+            };
+            
+            state.speechRecognition.start();
+        }
+        
+        state.mediaRecorder.start();
+        state.isRecording = true;
+        
+        // UI updates
+        el.chatInput.style.display = 'none';
+        el.micButton.style.display = 'none';
+        el.recordingUI.classList.add('active');
+        el.inputPill.classList.add('recording');
+        
+        initWaveform();
+        startRecordingTimer();
+        setState('listening');
+        
+    } catch (err) {
+        console.error('Microphone access error:', err);
+        alert('🎤 Mikrofon erişimi reddedildi veya kullanılamıyor.\n\nLütfen tarayıcı ayarlarından mikrofon iznini kontrol edin.');
+    }
+}
+
+function stopRecording() {
+    if (state.mediaRecorder && state.isRecording) {
+        state.mediaRecorder.stop();
+        state.isRecording = false;
+        
+        // UI reset
+        el.chatInput.style.display = '';
+        el.micButton.style.display = '';
+        el.recordingUI.classList.remove('active');
+        el.inputPill.classList.remove('recording');
+        
+        // Reset timer display
+        if (el.recordingTimer) {
+            el.recordingTimer.style.fontSize = '';
+        }
+        stopRecordingTimer();
+    }
+}
+
+function cancelRecording() {
+    if (state.mediaRecorder && state.isRecording) {
+        state.audioChunks = [];
+        state.speechText = '';
+        if (state.speechRecognition) {
+            try { state.speechRecognition.stop(); } catch(e) {}
+            state.speechRecognition = null;
+        }
+        state.mediaRecorder.stop();
+        state.isRecording = false;
+        
+        // UI reset
+        el.chatInput.style.display = '';
+        el.micButton.style.display = '';
+        el.recordingUI.classList.remove('active');
+        el.inputPill.classList.remove('recording');
+        
+        if (el.recordingTimer) {
+            el.recordingTimer.style.fontSize = '';
+        }
+        stopRecordingTimer();
+        setState('idle');
+    }
+}
+
+el.micButton.addEventListener('click', () => {
+    if (!state.isRecording) {
+        startRecording();
+    } else {
+        stopRecording();
+    }
+});
+
+el.sendButton.addEventListener('click', () => {
+    if (state.isRecording) {
+        stopRecording();
+    } else {
+        sendMessage();
+    }
+});
+
+el.recordingCancel.addEventListener('click', cancelRecording);
+
+// ═══════════════════════════════════════════════════════════
+// AVATAR STATE (IMPROVEMENT #5: Enhanced animations)
 // ═══════════════════════════════════════════════════════════
 function setState(s){
     if(state.currentState===s)return;
@@ -1423,30 +2367,260 @@ function setState(s){
     if(el.ringRotate)el.ringRotate.setAttribute('repeatCount','0');
     if(el.thinkingParticles)el.thinkingParticles.setAttribute('opacity','0');
 
+    // Enhanced eye glow for thinking/speaking
+    if(el.leftEyeGlow && el.rightEyeGlow) {
+        if(s === 'thinking' || s === 'speaking') {
+            el.leftEyeGlow.setAttribute('values', '1;0.5;1');
+            el.leftEyeGlow.setAttribute('dur', '1s');
+            el.leftEyeGlow.setAttribute('repeatCount', 'indefinite');
+            el.rightEyeGlow.setAttribute('values', '1;0.5;1');
+            el.rightEyeGlow.setAttribute('dur', '1s');
+            el.rightEyeGlow.setAttribute('repeatCount', 'indefinite');
+            el.leftEyeGlow.beginElement();
+            el.rightEyeGlow.beginElement();
+        } else {
+            el.leftEyeGlow.setAttribute('repeatCount', '0');
+            el.rightEyeGlow.setAttribute('repeatCount', '0');
+        }
+    }
+
+    // Eye glow overlay for default theme (over the robot image)
+    updateEyeGlowOverlay(s);
+
     switch(s){
         case 'idle':
-            el.statusText.textContent=state.connected?L.ready:L.connecting;
+            el.statusText.textContent=state.connected?'Hazır':'Bağlanıyor...';
             if(el.mouthSmile)el.mouthSmile.setAttribute('opacity','1');
-            openEyes();break;
+            openEyes();
+            createIdleParticles();
+            break;
         case 'listening':
-            el.statusText.textContent=L.listening;
+            el.statusText.textContent='Dinliyorum...';
             if(el.mouthSmile)el.mouthSmile.setAttribute('opacity','1');
-            halfCloseEyes();break;
+            halfCloseEyes();
+            break;
         case 'thinking':
-            el.statusText.textContent=L.thinking;
+            el.statusText.textContent='Düşünüyorum...';
             if(el.mouthSmile)el.mouthSmile.setAttribute('opacity','1');
-            startThinking();break;
+            startThinking();
+            break;
         case 'working':
-            el.statusText.textContent=L.working;
+            el.statusText.textContent='Çalışıyorum...';
             if(el.mouthSmile)el.mouthSmile.setAttribute('opacity','1');
             if(el.workingRing){el.workingRing.setAttribute('opacity','1');el.ringRotate.setAttribute('repeatCount','indefinite');el.ringRotate.beginElement();}
             break;
         case 'speaking':
-            el.statusText.textContent=L.speaking;
+            el.statusText.textContent='Konuşuyorum...';
             if(el.mouthBars)el.mouthBars.setAttribute('opacity','1');
-            openEyes();break;
+            openEyes();
+            createSpeakingParticles();
+            break;
     }
     updateAsciiFace(s);
+}
+
+// Eye glow overlay — intensifies during thinking/speaking (default theme)
+function updateEyeGlowOverlay(s) {
+    if (state.currentTheme !== 'default') return;
+    const lg = el.leftEyeGlowOverlay;
+    const rg = el.rightEyeGlowOverlay;
+    if (!lg || !rg) return;
+
+    if (s === 'thinking') {
+        lg.setAttribute('opacity', '0.35');
+        rg.setAttribute('opacity', '0.35');
+        // Pulsing glow
+        lg.innerHTML = '<animate attributeName="opacity" values=".2;.45;.2" dur="1.5s" repeatCount="indefinite"/>';
+        rg.innerHTML = '<animate attributeName="opacity" values=".2;.45;.2" dur="1.5s" repeatCount="indefinite"/>';
+    } else if (s === 'speaking') {
+        lg.setAttribute('opacity', '0.5');
+        rg.setAttribute('opacity', '0.5');
+        lg.innerHTML = '<animate attributeName="opacity" values=".3;.6;.3" dur=".8s" repeatCount="indefinite"/>';
+        rg.innerHTML = '<animate attributeName="opacity" values=".3;.6;.3" dur=".8s" repeatCount="indefinite"/>';
+    } else if (s === 'working') {
+        lg.setAttribute('opacity', '0.25');
+        rg.setAttribute('opacity', '0.25');
+        lg.innerHTML = '<animate attributeName="opacity" values=".15;.35;.15" dur="2s" repeatCount="indefinite"/>';
+        rg.innerHTML = '<animate attributeName="opacity" values=".15;.35;.15" dur="2s" repeatCount="indefinite"/>';
+    } else {
+        lg.setAttribute('opacity', '0');
+        rg.setAttribute('opacity', '0');
+        lg.innerHTML = '';
+        rg.innerHTML = '';
+    }
+}
+
+// Greeting wave animation
+function triggerGreetingWave() {
+    triggerWaveAnimation();
+}
+
+function triggerWaveAnimation() {
+    const hand = el.waveHand || $('waveHand');
+    if (!hand || state.currentTheme !== 'default') return;
+    hand.setAttribute('opacity', '1');
+    hand.innerHTML = `
+        <path d="M220,242 Q235,244 240,258 Q243,272 238,285 Q234,292 230,288 Q225,280 226,266 Q227,248 220,240 Z" fill="url(#bodyGrad)" stroke="#8892A0" stroke-width="1.5" opacity=".9"/>
+        <animateTransform attributeName="transform" type="rotate" 
+            values="0 220 243;-25 220 243;25 220 243;-20 220 243;20 220 243;-10 220 243;0 220 243" 
+            dur="1.8s" repeatCount="1" fill="freeze"/>
+    `;
+    setTimeout(() => { 
+        hand.innerHTML = '<path d="M220,242 Q235,244 240,258 Q243,272 238,285 Q234,292 230,288 Q225,280 226,266 Q227,248 220,240 Z" fill="url(#bodyGrad)" stroke="#8892A0" stroke-width="1.5" opacity=".9"/>';
+    }, 2200);
+}
+
+// Hover excitement — robot gets happy and waves!
+state.hoverCooldown = false;
+
+function triggerExcitement() {
+    if (state.hoverCooldown) return;
+    state.hoverCooldown = true;
+
+    // 1) Bouncy body animation
+    el.avatarContainer.classList.add('excited');
+    
+    // 2) Eyes grow bigger with delight
+    const lp = el.leftPupil;
+    const rp = el.rightPupil;
+    if (lp && rp && state.currentTheme === 'default') {
+        const origR = lp.getAttribute('r') || '18';
+        lp.setAttribute('r', '22');
+        rp.setAttribute('r', '22');
+        // Extra glow on eyes
+        if (el.leftEyeGlowOverlay && el.rightEyeGlowOverlay) {
+            el.leftEyeGlowOverlay.setAttribute('opacity', '0.6');
+            el.rightEyeGlowOverlay.setAttribute('opacity', '0.6');
+        }
+        setTimeout(() => {
+            lp.setAttribute('r', origR);
+            rp.setAttribute('r', origR);
+            if (el.leftEyeGlowOverlay && el.rightEyeGlowOverlay) {
+                el.leftEyeGlowOverlay.setAttribute('opacity', '0');
+                el.rightEyeGlowOverlay.setAttribute('opacity', '0');
+            }
+        }, 1200);
+    }
+
+    // 3) Smile wider
+    const mouth = el.mouthSmile;
+    if (mouth && state.currentTheme === 'default') {
+        mouth.setAttribute('d', 'M 130 172 Q 160 195 190 172');
+        mouth.setAttribute('stroke-width', '4');
+        setTimeout(() => {
+            mouth.setAttribute('d', 'M 135 175 Q 160 185 185 175');
+            mouth.setAttribute('stroke-width', '3');
+        }, 1500);
+    }
+
+    // 4) Wave hand!
+    triggerWaveAnimation();
+
+    // 5) Status text shows excitement
+    const origStatus = el.statusText.textContent;
+    const excitedTexts = ['Heyy! 👋', 'Selaam! 🎉', 'Merhaba! ✨', 'Ooo! 😄', 'Hey hey! 🤖'];
+    el.statusText.textContent = excitedTexts[Math.floor(Math.random() * excitedTexts.length)];
+    
+    setTimeout(() => {
+        el.avatarContainer.classList.remove('excited');
+        el.statusText.textContent = origStatus;
+    }, 2500);
+
+    // Cooldown so it doesn't spam
+    setTimeout(() => { state.hoverCooldown = false; }, 3000);
+}
+
+// Attach hover event to avatar
+el.avatarContainer.addEventListener('mouseenter', triggerExcitement);
+el.avatarContainer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    triggerExcitement();
+}, { passive: false });
+
+// IMPROVEMENT #5: State-reactive particles
+function createIdleParticles() {
+    if(!el.thinkingParticles || state.currentTheme === 'ascii') return;
+    el.thinkingParticles.setAttribute('opacity', '0.4');
+    el.thinkingParticles.innerHTML = '';
+    
+    for(let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const radius = 90;
+        const x = 160 + Math.cos(angle) * radius;
+        const y = 160 + Math.sin(angle) * radius;
+        
+        const particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        particle.setAttribute('cx', x);
+        particle.setAttribute('cy', y);
+        particle.setAttribute('r', '2');
+        particle.setAttribute('fill', 'var(--particle-color)');
+        particle.setAttribute('opacity', '0.3');
+        
+        const anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        anim.setAttribute('attributeName', 'opacity');
+        anim.setAttribute('values', '0.1;0.4;0.1');
+        anim.setAttribute('dur', '3s');
+        anim.setAttribute('begin', `${i * 0.375}s`);
+        anim.setAttribute('repeatCount', 'indefinite');
+        particle.appendChild(anim);
+        
+        const animR = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animR.setAttribute('attributeName', 'r');
+        animR.setAttribute('values', '2;3;2');
+        animR.setAttribute('dur', '3s');
+        animR.setAttribute('begin', `${i * 0.375}s`);
+        animR.setAttribute('repeatCount', 'indefinite');
+        particle.appendChild(animR);
+        
+        el.thinkingParticles.appendChild(particle);
+    }
+}
+
+function createSpeakingParticles() {
+    if(!el.thinkingParticles || state.currentTheme === 'ascii') return;
+    el.thinkingParticles.setAttribute('opacity', '0.6');
+    el.thinkingParticles.innerHTML = '';    
+    // Burst particles outward
+    for(let i = 0; i < 16; i++) {
+        const angle = (i / 16) * Math.PI * 2;
+        const startRadius = 60;
+        const endRadius = 120;
+        const x1 = 160 + Math.cos(angle) * startRadius;
+        const y1 = 160 + Math.sin(angle) * startRadius;
+        const x2 = 160 + Math.cos(angle) * endRadius;
+        const y2 = 160 + Math.sin(angle) * endRadius;
+        
+        const particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        particle.setAttribute('r', '3');
+        particle.setAttribute('fill', 'var(--particle-color)');
+        particle.setAttribute('opacity', '0');
+        
+        const animX = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animX.setAttribute('attributeName', 'cx');
+        animX.setAttribute('values', `${x1};${x2}`);
+        animX.setAttribute('dur', '0.8s');
+        animX.setAttribute('begin', `${i * 0.05}s`);
+        animX.setAttribute('repeatCount', 'indefinite');
+        particle.appendChild(animX);
+        
+        const animY = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animY.setAttribute('attributeName', 'cy');
+        animY.setAttribute('values', `${y1};${y2}`);
+        animY.setAttribute('dur', '0.8s');
+        animY.setAttribute('begin', `${i * 0.05}s`);
+        animY.setAttribute('repeatCount', 'indefinite');
+        particle.appendChild(animY);
+        
+        const animO = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animO.setAttribute('attributeName', 'opacity');
+        animO.setAttribute('values', '0;0.8;0');
+        animO.setAttribute('dur', '0.8s');
+        animO.setAttribute('begin', `${i * 0.05}s`);
+        animO.setAttribute('repeatCount', 'indefinite');
+        particle.appendChild(animO);
+        
+        el.thinkingParticles.appendChild(particle);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1461,6 +2635,11 @@ function trackMouse(e){
     const dy=Math.max(-cfg.maxOff,Math.min(cfg.maxOff,(e.clientY-cy)/15));
     el.leftPupil.setAttribute('cx',cfg.lx+dx);el.leftPupil.setAttribute('cy',cfg.ly+dy);
     el.rightPupil.setAttribute('cx',cfg.rx+dx);el.rightPupil.setAttribute('cy',cfg.ry+dy);
+    // Move highlight spots with pupils (default theme)
+    const hlL=el.avatarSvg.querySelector('.eyeHighlightL');
+    const hlR=el.avatarSvg.querySelector('.eyeHighlightR');
+    if(hlL){hlL.setAttribute('cx',cfg.lx+3+dx);hlL.setAttribute('cy',cfg.ly-3+dy);}
+    if(hlR){hlR.setAttribute('cx',cfg.rx+3+dx);hlR.setAttribute('cy',cfg.ry-3+dy);}
 }
 
 function blink(){
@@ -1496,14 +2675,24 @@ function startThinking(){
     el.thinkingParticles.setAttribute('opacity','1');el.thinkingParticles.innerHTML='';
     const cfg=EYE_CONFIG[state.currentTheme]||EYE_CONFIG['default'];
     const midX=(cfg.lx+cfg.rx)/2, midY=(cfg.ly+cfg.ry)/2;
+    
+    // Orbiting particles that speed up
     for(let i=0;i<12;i++){
         const a=(i/12)*Math.PI*2, r=105;
         const p=document.createElementNS('http://www.w3.org/2000/svg','circle');
-        p.setAttribute('cx',midX+Math.cos(a)*r);p.setAttribute('cy',midY+Math.sin(a)*r);
         p.setAttribute('r','3');p.setAttribute('fill','var(--accent-1)');p.setAttribute('opacity','0');
+        
+        const motion = document.createElementNS('http://www.w3.org/2000/svg','animateMotion');
+        motion.setAttribute('dur','1.5s');
+        motion.setAttribute('repeatCount','indefinite');
+        motion.setAttribute('path',`M${midX+Math.cos(a)*r},${midY+Math.sin(a)*r} A${r},${r} 0 1,1 ${midX+Math.cos(a)*r-1},${midY+Math.sin(a)*r} Z`);
+        p.appendChild(motion);
+        
         const an=document.createElementNS('http://www.w3.org/2000/svg','animate');
-        an.setAttribute('attributeName','opacity');an.setAttribute('values','0;1;0');an.setAttribute('dur','2s');an.setAttribute('begin',`${i*.17}s`);an.setAttribute('repeatCount','indefinite');
-        p.appendChild(an);el.thinkingParticles.appendChild(p);
+        an.setAttribute('attributeName','opacity');an.setAttribute('values','0;1;0');an.setAttribute('dur','1.5s');an.setAttribute('begin',`${i*.125}s`);an.setAttribute('repeatCount','indefinite');
+        p.appendChild(an);
+        
+        el.thinkingParticles.appendChild(p);
     }
 }
 
@@ -1512,9 +2701,21 @@ function startThinking(){
 // ═══════════════════════════════════════════════════════════
 document.addEventListener('mousemove',trackMouse);
 document.addEventListener('touchmove',e=>{if(e.touches.length)trackMouse({clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});});
-el.chatInput.addEventListener('input',()=>{autoResize();if(el.chatInput.value.length>0&&state.currentState==='idle')setState('listening');else if(!el.chatInput.value.length&&state.currentState==='listening')setState('idle');});
-el.chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
-el.sendButton.addEventListener('click',sendMessage);
+el.chatInput.addEventListener('input',()=>{
+    autoResize();
+    if(el.chatInput.value.length>0&&state.currentState==='idle')setState('listening');
+    else if(!el.chatInput.value.length&&state.currentState==='listening')setState('idle');
+});
+el.chatInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){
+        e.preventDefault();
+        if(state.isRecording) {
+            stopRecording();
+        } else {
+            sendMessage();
+        }
+    }
+});
 el.chatInput.addEventListener('focus',()=>{if(/iPhone|iPad|iPod/.test(navigator.userAgent))document.querySelector('meta[name=viewport]').setAttribute('content','width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');});
 setInterval(()=>{if(Math.random()<.3&&state.currentState==='idle')blink();},3000);
 
@@ -1533,16 +2734,154 @@ function customConfirm(msg){
     });
 }
 
-$('newSessionBtn').addEventListener('click',async()=>{
-    if(!state.connected)return;
-    if(!await customConfirm(L.newSessionConfirm))return;
-    state.ws.send(JSON.stringify({type:'req',id:uuid(),method:'chat.send',params:{sessionKey:state.sessionKey,message:'/new',deliver:false,idempotencyKey:uuid()}}));
-    el.chatMessages.innerHTML='';
-    state.lastDateLabel='';
-    state.streamingMessage=null;state.streamBuffer='';
-    hideTypingIndicator();
-    setState('idle');
-    setTimeout(()=>addMessage('assistant',L.newSessionStarted),500);
+// newSessionBtn removed — new session is now in sidebar only
+
+// ═══════════════════════════════════════════════════════════
+// HISTORY SIDEBAR
+// ═══════════════════════════════════════════════════════════
+const historySidebar = $('historySidebar');
+const sidebarOverlay = $('sidebarOverlay');
+const hamburgerBtn = $('hamburgerBtn');
+const sidebarCloseBtn = $('sidebarCloseBtn');
+const sidebarSessions = $('sidebarSessions');
+
+function toggleSidebar() {
+    const isOpen = historySidebar.classList.contains('open');
+    if (isOpen) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
+}
+
+function openSidebar() {
+    historySidebar.classList.add('open');
+    sidebarOverlay.classList.add('visible');
+    populateSessions();
+}
+
+function closeSidebar() {
+    historySidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+}
+
+function populateSessions() {
+    sidebarSessions.innerHTML = '';
+    
+    // "Yeni Oturum" button (NO confirmation prompt)
+    const newSessionItem = document.createElement('div');
+    newSessionItem.className = 'session-item session-new';
+    newSessionItem.innerHTML = `
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>Yeni Oturum</span>
+    `;
+    newSessionItem.onclick = () => {
+        if (!state.connected) return;
+        
+        // Create new session
+        const newSession = createSession('Yeni Oturum');
+        setActiveSession(newSession.key);
+        
+        // Clear UI
+        el.chatMessages.innerHTML = '';
+        state.lastDateLabel = '';
+        state.streamingMessage = null;
+        state.streamBuffer = '';
+        hideTypingIndicator();
+        setState('idle');
+        
+        // Load empty history for new session
+        state.historyReqId = uuid();
+        state.ws.send(JSON.stringify({
+            type: 'req',
+            id: state.historyReqId,
+            method: 'chat.history',
+            params: { sessionKey: newSession.key, limit: 100 }
+        }));
+        
+        closeSidebar();
+    };
+    sidebarSessions.appendChild(newSessionItem);
+    
+    // Load and display all sessions
+    loadSessions();
+    
+    // Sort by createdAt (newest first)
+    const sortedSessions = [...state.sessions].sort((a, b) => b.createdAt - a.createdAt);
+    
+    for (const session of sortedSessions) {
+        const sessionItem = document.createElement('div');
+        sessionItem.className = 'session-item';
+        
+        // Mark active session
+        if (session.key === state.sessionKey) {
+            sessionItem.classList.add('active');
+        }
+        
+        // Format date
+        const date = new Date(session.createdAt);
+        const dateStr = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        
+        sessionItem.innerHTML = `
+            <div class="session-info">
+                <div class="session-date">${dateStr} ${timeStr}</div>
+                <div class="session-preview">${session.label || 'Oturum'}</div>
+            </div>
+            <button class="session-delete" title="Oturumu sil">🗑️</button>
+        `;
+        
+        // Delete button handler (stop propagation so it doesn't trigger session switch)
+        sessionItem.querySelector('.session-delete').onclick = (e) => {
+            e.stopPropagation();
+            deleteSession(session.key);
+        };
+        
+        sessionItem.onclick = () => {
+            if (session.key === state.sessionKey) {
+                closeSidebar();
+                return;
+            }
+            
+            // Switch to this session
+            setActiveSession(session.key);
+            
+            // Clear UI
+            el.chatMessages.innerHTML = '';
+            state.lastDateLabel = '';
+            state.streamingMessage = null;
+            state.streamBuffer = '';
+            hideTypingIndicator();
+            setState('idle');
+            
+            // Load history for this session
+            state.historyReqId = uuid();
+            state.ws.send(JSON.stringify({
+                type: 'req',
+                id: state.historyReqId,
+                method: 'chat.history',
+                params: { sessionKey: session.key, limit: 100 }
+            }));
+            
+            closeSidebar();
+        };
+        
+        sidebarSessions.appendChild(sessionItem);
+    }
+}
+
+hamburgerBtn.addEventListener('click', toggleSidebar);
+sidebarCloseBtn.addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Close sidebar on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && historySidebar.classList.contains('open')) {
+        closeSidebar();
+    }
 });
 
 // GO

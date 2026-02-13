@@ -1,6 +1,64 @@
 # Changelog
 
-All notable changes to Clawdbot Webchat UI.
+All notable changes to BuddyBot / OpenClaw UI.
+
+## [2.0.0] - 2025-02-13
+
+### Added
+- **Voice Recording** — Mic button with waveform visualization
+  - MediaRecorder + SpeechRecognition dual mode
+  - Live waveform animation while recording
+  - Recording timer display
+  - Cancel recording option
+  - Auto-sends voice as WebM audio with transcript
+  
+- **Multi-Session Support** — Full session management
+  - Session list sidebar with history
+  - Create new sessions
+  - Switch between sessions
+  - Session persistence in localStorage
+  
+- **Redesigned Robot SVG Faces** — Fully redrawn from scratch
+  - Default: 3D metallic gradient robot with chest highlights
+  - Matrix: Digital skull with binary streams
+  - God Mode: All-seeing eye with divine geometry and halo
+  - Futuristic/Neon: Hologram visor with scan lines
+  - Ocean: Deep sea bioluminescent creature
+  - ASCII: Retro terminal text face
+  
+- **Enhanced Avatar Animations**
+  - Eye tracking follows mouse cursor
+  - Configurable eye movement per theme
+  - Blink animations
+  - Speaking/thinking state transitions
+  - Smooth crossfade between theme changes
+  
+- **Background Particle Effects** — Animated particles per theme
+  
+- **History Sidebar** — Browse and load past conversations
+
+- **Improved Message Rendering**
+  - Better markdown parsing
+  - Code block support
+  - Inline image/audio/video previews
+  - Date separators (Today, Yesterday, formatted dates)
+
+### Changed
+- Completely rewritten SVG faces (detailed 3D renders)
+- Theme switching now uses crossfade animation
+- Improved mobile responsiveness
+- Better WebSocket reconnection logic
+- Single file grew from ~91KB to ~130KB (richer SVG faces + voice recording)
+
+### Technical Details
+- Single self-contained HTML file (~130KB)
+- Zero dependencies
+- Pure vanilla JavaScript
+- No build step required
+- Works on all modern browsers
+- Mobile-first responsive design
+
+---
 
 ## [1.0.0] - 2025-02-10
 
@@ -18,11 +76,6 @@ All notable changes to Clawdbot Webchat UI.
   - Locale-aware date formatting
   - Easy to extend with more languages
   
-- **Dynamic UI Initialization** — All text set via config at runtime
-  - No hardcoded strings in HTML
-  - Theme persists across sessions
-  - Token storage with configurable key prefix
-  
 - **6 Stunning Themes**
   - Cyberpunk (default) — Purple/cyan robot
   - Matrix — Green digital skull
@@ -33,43 +86,12 @@ All notable changes to Clawdbot Webchat UI.
   
 - **Advanced Features**
   - SVG animated faces with eye tracking
-  - Blinking and expression animations
   - File upload with preview (images, video, audio, documents)
   - Drag & drop support
   - Streaming token responses
   - Session history loading
-  - Date separators (Today, Yesterday, dates)
   - Typing indicators
   - New session dialog
   - Mobile responsive design
   - WebSocket auto-reconnect
   - Token authentication
-  
-- **Documentation**
-  - Comprehensive README.md
-  - Configuration examples file
-  - Deployment instructions
-  - Docker support
-  - MIT License
-  
-### Changed
-- Converted from hardcoded "Buddy" to configurable bot name
-- Replaced dog emoji (🐕) with configurable emoji
-- Changed from Turkish-only to multi-language with English default
-- Updated all localStorage keys to use `clawdbot-webchat-` prefix
-- Made MAX_FILE_SIZE configurable via config
-- Made file input accept attribute configurable
-- Switched to dynamic `<html lang>` attribute based on locale
-- Updated document title to use config name
-- Made session key configurable (default: "main")
-
-### Technical Details
-- Single self-contained HTML file (91KB)
-- Zero dependencies
-- Pure vanilla JavaScript
-- No build step required
-- Works on all modern browsers
-- Mobile-first responsive design
-
-## Original Source
-Based on the Buddy chat interface (canvas/buddy-face/index.html)

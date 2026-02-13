@@ -8,11 +8,14 @@ A beautiful, themeable webchat interface for [Clawdbot](https://github.com/clawd
 ## ✨ Features
 
 - **6 Stunning Themes** — Cyberpunk, Matrix, God Mode, Neon, ASCII, Ocean
-- **Animated Avatar** — SVG faces with eye tracking, blinking, speaking animations
+- **3D Robot Avatars** — Detailed SVG faces with eye tracking, blinking, speaking animations
+- **Voice Recording** — Hold-to-record with live waveform, timer, and speech-to-text
+- **Multi-Session** — Create, switch, and manage multiple chat sessions
 - **File Upload** — Images, videos, audio, documents with inline previews
 - **Drag & Drop** — Drop files directly into the chat
 - **Streaming Responses** — Real-time token streaming from your AI
-- **Session History** — Persistent chat history across refreshes
+- **History Sidebar** — Browse and load past conversations
+- **Background Particles** — Animated theme-aware particle effects
 - **Mobile Responsive** — Works on phones, tablets, desktops
 - **Token Auth** — Secure gateway token authentication
 - **Multi-language** — English and Turkish built-in, easily extensible
